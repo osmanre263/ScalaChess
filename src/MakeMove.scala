@@ -1,6 +1,6 @@
 import Board._
 import Defs._
-import util.control.Breaks.break
+import util.control.Breaks._
 
 object MakeMove {
     def ClearPiece(sq : Int) {
@@ -13,13 +13,13 @@ object MakeMove {
 
         brd_pieces(sq) = PIECES.EMPTY.id
         brd_material(col) -= PieceVal(pce)
-
+        breakable {
         for(index <- 0 until brd_pceNum(pce)) {
             if (brd_pList(PCEINDEX(pce,index)) == sq) {
                 t_pceNum = index
                 break
             }
-        }
+        }}
 
         brd_pceNum(pce) -= 1
         brd_pList(PCEINDEX(pce,t_pceNum)) = brd_pList(PCEINDEX(pce,brd_pceNum(pce)))
@@ -45,17 +45,16 @@ object MakeMove {
 
         HASH_PCE(pce,to)
         brd_pieces(to) = pce
-
+        breakable {
         for(index <- 0 until brd_pceNum(pce) ) {
             if (brd_pList(PCEINDEX(pce,index)) == from) {
                 brd_pList(PCEINDEX(pce,index)) = to
                 break
             }
-        }
+        }}
     }
 
     def MakeMove(move : Int): Boolean = {
-
         val from = FROMSQ(move)
         val to = TOSQ(move)
         val side = brd_side
@@ -68,23 +67,17 @@ object MakeMove {
             } else {
                 ClearPiece(to+10)
             }
-        } else if ( (move & MFLAGCA) != 0) {
-            /*switch(to) {
-                case SQUARES.C1.id:
-                MovePiece(SQUARES.A1.id, SQUARES.D1.id)
-                break
-                case SQUARES.C8.id:
-                    MovePiece(SQUARES.A8, SQUARES.D8.id)
-                break
-                case SQUARES.G1.id:
+        } else if ((move & MFLAGCA) != 0) {
+            to match {
+                case 23 =>
+                    MovePiece(SQUARES.A1.id, SQUARES.D1.id)
+                case 93 =>
+                    MovePiece(SQUARES.A8.id, SQUARES.D8.id)
+                case 27 =>
                     MovePiece(SQUARES.H1.id, SQUARES.F1.id)
-                break
-                case SQUARES.G8.id:
+                case 97 =>
                     MovePiece(SQUARES.H8.id, SQUARES.F8.id)
-                break
-                default: break
-            }*/
-            println("hi")
+            }
         }
 
         if (brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
@@ -173,14 +166,12 @@ object MakeMove {
                 AddPiece(to+10, PIECES.wP.id)
             }
         } else if ( (MFLAGCA & move) != 0) {
-            /*switch(to) {
-                case SQUARES.C1.id: MovePiece(SQUARES.D1.id, SQUARES.A1.id) break
-                case SQUARES.C8.id: MovePiece(SQUARES.D8.id, SQUARES.A8) break
-                case SQUARES.G1.id: MovePiece(SQUARES.F1.id, SQUARES.H1.id) break
-                case SQUARES.G8.id: MovePiece(SQUARES.F8.id, SQUARES.H8.id) break
-                default: break
-            }*/
-            println("hi")
+            to match {
+                case 23 => MovePiece(SQUARES.D1.id, SQUARES.A1.id)
+                case 93 => MovePiece(SQUARES.D8.id, SQUARES.A8.id)
+                case 27 => MovePiece(SQUARES.F1.id, SQUARES.H1.id)
+                case 97 => MovePiece(SQUARES.F8.id, SQUARES.H8.id)
+            }
         }
 
         MovePiece(to, from)

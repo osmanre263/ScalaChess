@@ -26,7 +26,7 @@ object Perft {
     }
 
     def PerftTest(depth : Int) {
-        PrintBoard()
+        //PrintBoard()
         println("Starting Test To Depth:" + depth)
         perft_leafNodes = 0
 
@@ -43,7 +43,7 @@ object Perft {
                 Perft(depth-1)
                 TakeMove()
                 val oldnodes = perft_leafNodes - cumnodes
-                println("move:" + moveNum + " " + PrMove(move) + " " + oldnodes)
+                println("move: " + moveNum + " " + PrMove(move) + " " + oldnodes)
             }
         }
 

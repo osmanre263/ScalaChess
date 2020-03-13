@@ -19,7 +19,9 @@ object Search {
     var srch_thinking = false
 
     def CheckUp() {
-        //if( ($.now()-srch_start) > srch_time ) srch_stop = true
+        var time = System.currentTimeMillis()
+        //println(time)
+        if ((time-srch_start) > srch_time ) srch_stop = true
     }
 
     def PickNextMove(moveNum : Int) {
@@ -44,8 +46,8 @@ object Search {
     }
 
     def IsRepetition(): Boolean = {
-        for(index <- brd_hisPly-brd_fiftyMove until brd_hisPly-1) {
-            if(brd_posKey == brd_history(index).posKey) {
+        for (index <- brd_hisPly-brd_fiftyMove until brd_hisPly-1) {
+            if (brd_posKey == brd_history(index).posKey) {
                 return true
             }
         }
@@ -53,19 +55,15 @@ object Search {
     }
 
     def ClearPvTable() {
-
-        for(index <- 0 until PVENTRIES) {
-            brd_PvTable(index).move = NOMOVE
-            brd_PvTable(index).posKey = 0
-        }
+        brd_PvTable = Array.fill[PvMove](PVENTRIES)(new PvMove())
     }
 
     def ClearForSearch() {
-        for(index <- 0 until 14 * BRD_SQ_NUM) {
+        for (index <- 0 until 14 * BRD_SQ_NUM) {
             brd_searchHistory(index) = 0
         }
 
-        for(index <- 0 until 3 * MAXDEPTH) {
+        for (index <- 0 until 3 * MAXDEPTH) {
             brd_searchKillers(index) = 0
         }
 
@@ -84,25 +82,25 @@ object Search {
         var alpha = _alpha
         val beta = _beta
         
-        if((srch_nodes & 2047) == 0) CheckUp()
+        if ((srch_nodes & 2047) == 0) CheckUp()
 
         srch_nodes += 1
 
-        if(IsRepetition() || brd_fiftyMove >= 100) {
+        if (IsRepetition() || brd_fiftyMove >= 100) {
             return 0
         }
 
-        if(brd_ply > MAXDEPTH - 1) {
+        if (brd_ply > MAXDEPTH - 1) {
             return EvalPosition()
         }
 
         var Score = EvalPosition()
 
-        if(Score >= beta) {
+        if (Score >= beta) {
             return beta
         }
 
-        if(Score > alpha) {
+        if (Score > alpha) {
             alpha = Score
         }
 
@@ -116,41 +114,40 @@ object Search {
 
         Score = -INFINITE
 
-        if( PvMove != NOMOVE) {
-            for(MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1)) {
-                if( brd_moveList(MoveNum) == PvMove) {
-                    brd_moveScores(MoveNum).score = 2000000
+        if (PvMove != NOMOVE) {
+            breakable {
+            for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1)) {
+                if (brd_moveList(MoveNum) == PvMove) {
+                    brd_moveScores(MoveNum) = 2000000
                     break
                 }
-            }
+            }}
         }
 
-        for(MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1) )  {
+        for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1) )  {
             PickNextMove(MoveNum)
 
-            if ( !MakeMove(brd_moveList(MoveNum)))  {
-                //continue
-            }
-
-            Legal += 1
-            Score = -Quiescence(-beta, -alpha)
-            TakeMove()
-            if(srch_stop) return 0
-            if(Score > alpha) {
-                if(Score >= beta) {
-                    if(Legal==1) {
-                        srch_fhf += 1
+            if (MakeMove(brd_moveList(MoveNum)))  {
+                Legal += 1
+                Score = -Quiescence(-beta, -alpha)
+                TakeMove()
+                if (srch_stop) return 0
+                if (Score > alpha) {
+                    if (Score >= beta) {
+                        if (Legal==1) {
+                            srch_fhf += 1
+                        }
+                        srch_fh += 1
+    
+                        return beta
                     }
-                    srch_fh += 1
-
-                    return beta
+                    alpha = Score
+                    BestMove = brd_moveList(MoveNum)
                 }
-                alpha = Score
-                BestMove = brd_moveList(MoveNum)
             }
         }
 
-        if(alpha != OldAlpha) {
+        if (alpha != OldAlpha) {
             StorePvMove(BestMove)
         }
 
@@ -162,34 +159,34 @@ object Search {
         val beta = _beta
         var depth = _depth
         
-        if(depth <= 0) {
-            return Quiescence(alpha, beta)
-            // return EvalPosition()
+        if (depth <= 0) {
+            //return Quiescence(alpha, beta)
+            return EvalPosition()
         }
         
-        if((srch_nodes & 2047) == 0) CheckUp()
+        //if ((srch_nodes & 2047) == 0) CheckUp()
 
         srch_nodes += 1
 
-        if((IsRepetition() || brd_fiftyMove >= 100) && brd_ply != 0) {
+        if ((IsRepetition() || brd_fiftyMove >= 100) && brd_ply != 0) {
             return 0
         }
 
-        if(brd_ply > MAXDEPTH - 1) {
+        if (brd_ply > MAXDEPTH - 1) {
             return EvalPosition()
         }
 
         val InCheck = SqAttacked(brd_pList(PCEINDEX(Kings(brd_side).id, 0)), brd_side ^ 1)
 
-        if(InCheck) {
+        if (InCheck) {
             depth += 1
         }
 
         var Score = -INFINITE
 
-        if(DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
+        /*if (DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
             val ePStore = brd_enPas
-            if(brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
+            if (brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
             brd_side ^= 1
             HASH_SIDE()
             brd_enPas = SQUARES.NO_SQ.id
@@ -199,13 +196,13 @@ object Search {
             brd_side ^= 1
             HASH_SIDE()
             brd_enPas = ePStore
-            if(brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
+            if (brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
 
-            if(srch_stop) return 0
+            if (srch_stop) return 0
             if (Score >= beta) {
                 return beta
             }
-        }
+        }*/
 
         GenerateMoves()
 
@@ -213,98 +210,101 @@ object Search {
         var Legal = 0
         val OldAlpha = alpha
         var BestMove = NOMOVE
+        var Move = NOMOVE
         Score = -INFINITE
-        val PvMove = ProbePvTable()
+        
+        /*val PvMove = ProbePvTable()
 
-        if( PvMove != NOMOVE) {
-            for(MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1) ) {
-                if( brd_moveList(MoveNum) == PvMove) {
-                    brd_moveScores(MoveNum).score = 2000000
+        if (PvMove != NOMOVE) {
+            breakable {
+            for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1)) {
+                if (brd_moveList(MoveNum) == PvMove) {
+                    brd_moveScores(MoveNum) = 2000000
                     break
                 }
+            }}
+        }*/
+
+        for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1))  {
+            //PickNextMove(MoveNum)
+            Move = brd_moveList(MoveNum)
+
+            if (MakeMove(Move))  {
+                Legal += 1
+                Score = -AlphaBeta( -beta, -alpha, depth-1, true)
+                TakeMove()
+
+                if (srch_stop) return 0
+
+                if (Score > alpha) {
+                    if (Score >= beta) {
+                        if (Legal==1) {
+                            srch_fhf += 1
+                        }
+                        srch_fh += 1
+
+                        if ((Move & MFLAGCAP) == 0) {
+                            //brd_searchKillers(MAXDEPTH + brd_ply) = brd_searchKillers(brd_ply)
+                            //brd_searchKillers(brd_ply) = brd_moveList(MoveNum)
+                        }
+                        return beta
+                    }
+                    alpha = Score
+                    BestMove = Move
+                    if ((BestMove & MFLAGCAP) == 0) {
+                        //brd_searchHistory( brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove) ) += depth
+                    }
+                }
             }
         }
 
-        for(MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1) )  {
-
-            PickNextMove(MoveNum)
-
-            if ( !MakeMove(brd_moveList(MoveNum)))  {
-                //continue
-            }
-
-            Legal += 1
-            Score = -AlphaBeta( -beta, -alpha, depth-1, true)
-            TakeMove()
-            if(srch_stop) return 0
-
-            if(Score > alpha) {
-                if(Score >= beta) {
-                    if(Legal==1) {
-                        srch_fhf += 1
-                    }
-                    srch_fh += 1
-
-                    if((brd_moveList(MoveNum) & MFLAGCAP) == 0) {
-                        brd_searchKillers(MAXDEPTH + brd_ply) = brd_searchKillers(brd_ply)
-                        brd_searchKillers(brd_ply) = brd_moveList(MoveNum)
-                    }
-                    return beta
-                }
-                alpha = Score
-                BestMove = brd_moveList(MoveNum)
-                if((BestMove & MFLAGCAP) == 0) {
-                    brd_searchHistory( brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove) ) += depth
-                }
-            }
-        }
-
-        if(Legal == 0) {
-            if(InCheck) {
+        if (Legal == 0) {
+            if (InCheck) {
                 return -MATE + brd_ply
             } else {
                 return 0
             }
         }
 
-        if(alpha != OldAlpha) {
+        if (alpha != OldAlpha) {
             StorePvMove(BestMove)
         }
 
         return alpha
     }
 
-    //var domUpdate_depth
-    //var domUpdate_move
-    //var domUpdate_score
-    //var domUpdate_nodes
-    //var domUpdate_ordering
+    /*var domUpdate_depth
+    var domUpdate_move
+    var domUpdate_score
+    var domUpdate_nodes
+    var domUpdate_ordering
 
-    /*def UpdateDOMStats() {
-        var scoreText = "Score: " + (domUpdate_score/100).toFixed(2)
-        if(Math.abs(domUpdate_score) > MATE-MAXDEPTH) {
-            scoreText = "Score: " + "Mate In " + (MATE - Math.abs(domUpdate_score)) + " moves"
-        }
+    def UpdateDOMStats {
+    var scoreText = "Score: " + (domUpdate_score/100).toFixed(2)
+    if (Math.abs(domUpdate_score) > MATE-MAXDEPTH) {
+        scoreText = "Score: " + "Mate In " + (MATE - Math.abs(domUpdate_score)) + " moves"
+    }
 
-        //println("UpdateDOMStats depth:" + domUpdate_depth + " score:" + domUpdate_score + " nodes:" + domUpdate_nodes)
-        $("#OrderingOut").text("Ordering: " + domUpdate_ordering + "%")
-        $("#DepthOut").text("Depth: " + domUpdate_depth)
-        $("#ScoreOut").text(scoreText)
-        $("#NodesOut").text("Nodes: " + domUpdate_nodes)
-        $("#TimeOut").text("Time: " + (($.now()-srch_start)/1000).toFixed(1) + "s")
-    }*/
+    //println("UpdateDOMStats depth:" + domUpdate_depth + " score:" + domUpdate_score + " nodes:" + domUpdate_nodes)
+    $("#OrderingOut").text("Ordering: " + domUpdate_ordering + "%")
+    $("#DepthOut").text("Depth: " + domUpdate_depth)
+    $("#ScoreOut").text(scoreText)
+    $("#NodesOut").text("Nodes: " + domUpdate_nodes)
+    $("#TimeOut").text("Time: " + (($.now()-srch_start)/1000).toFixed(1) + "s")
+    */
 
-    def SearchPosition() {
-        var bestMove = NOMOVE
-        var bestScore = -INFINITE
-        var pvNum = 0
-        var line = ""
-        ClearForSearch()
+    /*def SearchPosition1(depth : Int) {
+        //var bestMove = NOMOVE
+       // var bestScore = -INFINITE
+        //var pvNum = 0
+        //var line = ""
 
-        /*if(GameController.BookLoaded == true) {
+        //ClearForSearch()
+
+        /*if (GameController.BookLoaded == true) {
             bestMove = BookMove()
 
-            if(bestMove != NOMOVE) {
+            if (bestMove != NOMOVE) {
                 $("#OrderingOut").text("Ordering:")
                 $("#DepthOut").text("Depth: ")
                 $("#ScoreOut").text("Score:")
@@ -318,30 +318,92 @@ object Search {
         }*/
 
         // iterative deepening
-        for( currentDepth <- 1 to srch_depth) {
+        //for (currentDepth <- 1 to depth) {
+           /* bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true)
+            //if (srch_stop) break
+                pvNum = GetPvLine(currentDepth)
+                bestMove = brd_PvArray(0)
+                line = "Depth: " + currentDepth + " best: " + PrMove(bestMove) + " Score: " + bestScore + " nodes: " + srch_nodes
 
-            bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true)
-            if(srch_stop) break
-            pvNum = GetPvLine(currentDepth)
-            bestMove = brd_PvArray(0)
-            line = "Depth:" + currentDepth + " best:" + PrMove(bestMove) + " Score:" + bestScore + " nodes:" + srch_nodes
+                if (currentDepth!=1) {
+                    //line += (" Ordering:" + ((srch_fhf/srch_fh)*100) + "%")
+                }
+                println(line)
 
-            if(currentDepth!=1) {
-                line += (" Ordering:" + ((srch_fhf/srch_fh)*100) + "%")
+                domUpdate_depth = currentDepth
+                domUpdate_move = bestMove
+                domUpdate_score = bestScore
+                domUpdate_nodes = srch_nodes
+                domUpdate_ordering = ((srch_fhf/srch_fh)*100).toFixed(2)*/
+
+            var bestMove = NOMOVE;
+            var bestScore = -INFINITE;
+            var currentDepth = 0;
+            var pvMoves = 0;
+            var pvNum = 0;
+            var rootDepth = 0
+            ClearForSearch();
+
+            //if (EngineOptions->UseBook == TRUE) bestMove = GetBookMove(pos);
+
+            //printf("Search depth:%d\n",info->depth);
+
+            // iterative deepening
+            if (bestMove == NOMOVE) {
+                for ( currentDepth <- 1 to depth ) {
+                    rootDepth = currentDepth;
+                    bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true);
+
+                    //if (info->stopped == TRUE) break;
+
+                    pvMoves = GetPvLine(currentDepth);
+                    bestMove = brd_PvArray(0)
+                    printf("info score cp %d depth %d nodes %ld ",bestScore,currentDepth,srch_nodes)
+                    pvMoves = GetPvLine(currentDepth)
+                        for (pvNum <- 0 until pvMoves) {
+                            printf(" %s",PrMove(brd_PvArray(pvNum)))
+                        }
+                        println("\n");
+                    //printf("Hits:%d Overwrite:%d NewWrite:%d Cut:%d\nOrdering %.2f NullCut:%d\n",pos->HashTable->hit,pos->HashTable->overWrite,pos->HashTable->newWrite,pos->HashTable->cut,
+                    //(info->fhf/info->fh)*100,info->nullCut);
+                }
             }
-            println(line)
-
-            /*domUpdate_depth = currentDepth
-            domUpdate_move = bestMove
-            domUpdate_score = bestScore
-            domUpdate_nodes = srch_nodes
-            domUpdate_ordering = ((srch_fhf/srch_fh)*100).toFixed(2)*/
-        }
+        //}
 
         //$("#BestOut").text("BestMove: " + PrMove(bestMove))
         //UpdateDOMStats()
         srch_best = bestMove
         srch_thinking = false
+    }
+    */
 
+    def SearchPosition(depth : Int) {
+        var bestMove = NOMOVE;
+        var bestScore = -INFINITE;
+        var pvMoves = 0;
+        var line = ""
+
+        ClearForSearch();
+
+        for (currentDepth <- 1 to depth ) {
+            bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true);
+            //if (info->stopped == TRUE) break;
+            bestMove = ProbePvTable()
+            line = "D: " + currentDepth + " Best: " + PrMove(bestMove) + " Score: " + bestScore + " nodes: " + srch_nodes
+
+            pvMoves = GetPvLine(currentDepth)
+            line += " Pv:"
+            for (pvNum <- 0 until pvMoves) {
+                line += " " + PrMove(brd_PvArray(pvNum))
+            }
+            if (currentDepth != 1) {
+                println(srch_fhf.toDouble + " " + srch_fh.toDouble)
+                line += " Ordering: " + (srch_fhf.toDouble/srch_fh.toDouble)*100.floor + "%"
+            }
+            println(line);
+        }
+
+        srch_best = bestMove
+        srch_thinking = false
     }
 }

@@ -1,29 +1,14 @@
 import Defs._
-import Search._ 
-import Board._ 
+import Search._
+import Board._
 import MoveGen._
 import Evaluate._
+import Perft._
 
 object Main {
     def InitBoardVars() {
-        var index = 0
-        for(index <- 0 until MAXGAMEMOVES) {
-            brd_history.push({
-                move : NOMOVE,
-                castlePerm : 0,
-                enPas : 0,
-                fiftyMove : 0,
-                posKey : 0
-            })
-        }
-
-        for(index <- 0 until PVENTRIES ) {
-            brd_PvTable.push({
-                move : NOMOVE,
-                posKey : 0
-            })
-        }
-
+        brd_history = Array.fill[HistoryMove](MAXGAMEMOVES)(new HistoryMove())
+        brd_PvTable = Array.fill[PvMove](MAXGAMEMOVES)(new PvMove())
     }
 
     def EvalInit() {
@@ -102,5 +87,11 @@ object Main {
 
     def main(args: Array[String]): Unit = {
         init()
+        //ParseFen("R6r/8/8/2K5/5k2/8/8/r6R w - - 0 1")
+        ParseFen(START_FEN)
+        //PrintBoard()
+        //PerftTest(5)
+        //PrintPceLists()
+        SearchPosition(5)
     }
 }

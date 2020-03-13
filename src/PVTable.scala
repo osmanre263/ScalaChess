@@ -10,18 +10,17 @@ object PVTable {
 
         var move = ProbePvTable()
         var count = 0
-
+        breakable {
         while(move != NOMOVE && count < depth) {
             if(MoveExists(move)) {
                 MakeMove(move)
-                count += 1
                 brd_PvArray(count) = move
-                //println("GetPvLine added " + PrMove(move))
+                count += 1
             } else {
                 break
             }
             move = ProbePvTable()
-        }
+        }}
 
         while(brd_ply > 0) {
             TakeMove()
@@ -39,7 +38,7 @@ object PVTable {
     def ProbePvTable(): Int = {
         val index = brd_posKey % PVENTRIES
 
-        if( brd_PvTable(index).posKey == brd_posKey ) {
+        if(brd_PvTable(index).posKey == brd_posKey ) {
             return brd_PvTable(index).move
         }
 

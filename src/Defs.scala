@@ -2,7 +2,7 @@ import Board._
 
 object Defs {
     var BRD_SQ_NUM = 120
-
+    //                                {val      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12        }
     object PIECES extends Enumeration {val  EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK = Value}
 
     var MAXGAMEMOVES = 2048
@@ -21,16 +21,16 @@ object Defs {
     object COLORS extends Enumeration {val WHITE, BLACK, BOTH = Value}
 
     object SQUARES extends Enumeration {
-        val A1: SQUARES.Value = Value(21); val B1: SQUARES.Value = Value(22); val C1: SQUARES.Value = Value(23); val D1: SQUARES.Value = Value(24); val E1: SQUARES.Value = Value(25); val F1: SQUARES.Value = Value(26); val G1: SQUARES.Value = Value(27); val H1: SQUARES.Value = Value(28)
-        val A8: SQUARES.Value = Value(91); val B8: SQUARES.Value = Value(92); val C8: SQUARES.Value = Value(93); val D8: SQUARES.Value = Value(94); val E8: SQUARES.Value = Value(95); val F8: SQUARES.Value = Value(96); val G8: SQUARES.Value = Value(97); val H8: SQUARES.Value = Value(98)
-        val NO_SQ: SQUARES.Value = Value(99); val OFFBOARD: SQUARES.Value = Value(100)
+        val A1 = Value(21); val B1 = Value(22); var C1 = Value(23); val D1 = Value(24); val E1 = Value(25); val F1 = Value(26); val G1 = Value(27); val H1 = Value(28)
+        val A8 = Value(91); val B8 = Value(92); val C8 = Value(93); val D8 = Value(94); val E8 = Value(95); val F8 = Value(96); val G8 = Value(97); val H8 = Value(98)
+        val NO_SQ = Value(99); val OFFBOARD = Value(100)
     }
 
     object CASTLEBIT extends Enumeration {
-        val WKCA: CASTLEBIT.Value = Value(1)
-        val WQCA: CASTLEBIT.Value = Value(2)
-        val BKCA: CASTLEBIT.Value = Value(4)
-        val BQCA: CASTLEBIT.Value = Value(8)
+        val WKCA = Value(1)
+        val WQCA = Value(2)
+        val BKCA = Value(4)
+        val BQCA = Value(8)
     }
 
     var FilesBrd = new Array[Int](BRD_SQ_NUM)
@@ -130,7 +130,9 @@ object Defs {
 
     def MIRROR64(sq : Int): Int =  Mirror64(sq)
 
-    def RAND_32(): Int = (((Math.random()*255)+1).floor.toInt << 23) | (((Math.random()*255)+1).floor.toInt << 16) | (((Math.random()*255)+1).floor.toInt << 8) | ((Math.random()*255)+1).floor.toInt + 1
+    def RAND_32(): Int = {
+       return (((Math.random() * 255) + 1).floor.toInt << 23) |(((Math.random() * 255) + 1).floor.toInt << 16) |(((Math.random() * 255) + 1).floor.toInt << 8) |((Math.random() * 255) + 1).floor.toInt + 1
+    }
 
     def SQOFFBOARD(sq : Int): Boolean = {
         if(FilesBrd(sq)==SQUARES.OFFBOARD.id) return true
@@ -140,7 +142,7 @@ object Defs {
     def HASH_PCE(pce : Int,sq : Int): Unit = brd_posKey ^= PieceKeys(pce * 120 + sq)
     def HASH_CA(): Unit = brd_posKey ^= CastleKeys(brd_castlePerm)
     def HASH_SIDE(): Unit = brd_posKey ^= SideKey
-    def HASH_EP(): Unit = brd_posKey ^= PieceKeys(brd_enPas.id)
+    def HASH_EP(): Unit = brd_posKey ^= PieceKeys(brd_enPas)
 
     //var GameController = {}
     //GameController.EngineSide = COLORS.BOTH

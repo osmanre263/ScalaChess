@@ -5,20 +5,6 @@ import MakeMove._
 import util.control.Breaks._
 
 object IO {
-    /*def SqFromAlg(moveAlg) {
-
-        //println('SqFromAlg' + moveAlg)
-        if(moveAlg.length != 2) return SQUARES.NO_SQ
-
-        if(moveAlg(0) > 'h' || moveAlg(0) < 'a' ) return SQUARES.NO_SQ
-        if(moveAlg(1) > '8' || moveAlg(1) < '1' ) return SQUARES.NO_SQ
-
-        file = moveAlg(0).charCodeAt() - 'a'.charCodeAt()
-        rank = moveAlg(1).charCodeAt() - '1'.charCodeAt()
-
-        return FR2SQ(file,rank)
-    }*/
-
     def PrintMoveList() {
         var move = 0
         println("MoveList:")
@@ -31,31 +17,33 @@ object IO {
         }
     }
 
-    def PrSq(sq : Int) {
+    def PrSq(sq : Int): String = {
         val file = FilesBrd(sq)
         val rank = RanksBrd(sq)
 
-        val sqStr = String.fromCharCode('a'.charCodeAt() + file) + String.fromCharCode('1'.charCodeAt() + rank)
-        return sqStr
+        return FileChar(file).toString + RankChar(rank).toString
     }
 
     def PrMove(move : Int): String = {
 
         var MvStr = ""
 
-        //MvStr = String.fromCharCode('a'.charCodeAt() + ff) + String.fromCharCode('1'.charCodeAt() + rf) +
-         //   String.fromCharCode('a'.charCodeAt() + ft) + String.fromCharCode('1'.charCodeAt() + rt)
+        val ff = FilesBrd(FROMSQ(move))
+        val rf = RanksBrd(FROMSQ(move))
+        val ft = FilesBrd(TOSQ(move))
+        val rt = RanksBrd(TOSQ(move))
+        MvStr = FileChar(ff).toString + RankChar(rf).toString + FileChar(ft).toString + RankChar(rt).toString// + ('1'.toInt + rf).toString + ('a'.toInt + ft).toString + ('1'.toInt + rt).toString
 
         val promoted = PROMOTED(move)
 
         if(promoted != PIECES.EMPTY.id) {
-            var pchar = "q"
+            var pchar = 'q'
             if(PieceKnight(promoted)) {
-                pchar = "n"
+                pchar = 'n'
             } else if(PieceRookQueen(promoted) && !PieceBishopQueen(promoted))  {
-                pchar = "r"
+                pchar = 'r'
             } else if(!PieceRookQueen(promoted) && PieceBishopQueen(promoted))   {
-                pchar = "b"
+                pchar = 'b'
             }
             MvStr += pchar
         }
@@ -63,12 +51,12 @@ object IO {
     }
 
     def ParseMove(from : Int, to : Int): Int = {
-
         GenerateMoves()
 
         var Move = NOMOVE
         var PromPce = PIECES.EMPTY.id
         var found = false
+        breakable {
         for(index <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1)) {
             Move = brd_moveList(index)
             if(FROMSQ(Move)==from && TOSQ(Move)==to) {
@@ -83,7 +71,7 @@ object IO {
                 found = true
                 break
             }
-        }
+        }}
 
         if(found) {
             if(!MakeMove(Move)) {

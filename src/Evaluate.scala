@@ -85,11 +85,11 @@ object Evaluate {
             file = FilesBrd(sq)+1
             rank = RanksBrd(sq)
             if(PawnRanksWhite(file-1)==RANKS.RANK_8.id && PawnRanksWhite(file+1)==RANKS.RANK_8.id) {
-                score += PawnIsolated
+                //score += PawnIsolated
             }
 
             if(PawnRanksBlack(file-1)<=rank && PawnRanksBlack(file)<=rank && PawnRanksBlack(file+1)<=rank) {
-                score += PawnPassed(rank)
+                //score += PawnPassed(rank)
             }
         }
 
@@ -100,11 +100,11 @@ object Evaluate {
             file = FilesBrd(sq)+1
             rank = RanksBrd(sq)
             if(PawnRanksBlack(file-1)==RANKS.RANK_1.id && PawnRanksBlack(file+1)==RANKS.RANK_1.id) {
-                score -= PawnIsolated
+                //score -= PawnIsolated
             }
 
             if(PawnRanksWhite(file-1)>=rank && PawnRanksWhite(file)>=rank && PawnRanksWhite(file+1)>=rank) {
-                score -= PawnPassed(7-rank)
+                //score -= PawnPassed(7-rank)
             }
         }
 
@@ -139,9 +139,9 @@ object Evaluate {
             file = FilesBrd(sq)+1
             if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
                 if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
-                    score += RookOpenFile
+                    //score += RookOpenFile
                 } else  {
-                    score += RookSemiOpenFile
+                    //score += RookSemiOpenFile
                 }
             }
         }
@@ -153,9 +153,9 @@ object Evaluate {
             file = FilesBrd(sq)+1
             if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
                 if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
-                    score -= RookOpenFile
+                    //score -= RookOpenFile
                 } else  {
-                    score -= RookSemiOpenFile
+                    //score -= RookSemiOpenFile
                 }
             }
         }
@@ -167,9 +167,9 @@ object Evaluate {
             file = FilesBrd(sq)+1
             if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
                 if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
-                    score += QueenOpenFile
+                    //score += QueenOpenFile
                 } else  {
-                    score += QueenSemiOpenFile
+                    //score += QueenSemiOpenFile
                 }
             }
         }
@@ -181,9 +181,9 @@ object Evaluate {
             file = FilesBrd(sq)+1
             if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
                 if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
-                    score -= QueenOpenFile
+                    //score -= QueenOpenFile
                 } else  {
-                    score -= QueenSemiOpenFile
+                    //score -= QueenSemiOpenFile
                 }
             }
         }
@@ -206,8 +206,8 @@ object Evaluate {
             score -= KingO(MIRROR64(SQ64(sq)))
         }
 
-        if(brd_pceNum(PIECES.wB.id) >= 2) score += BishopPair
-        if(brd_pceNum(PIECES.bB.id) >= 2) score -= BishopPair
+        //if(brd_pceNum(PIECES.wB.id) >= 2) score += BishopPair
+        //if(brd_pceNum(PIECES.bB.id) >= 2) score -= BishopPair
 
         if(brd_side == COLORS.WHITE.id) {
             return score

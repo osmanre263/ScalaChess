@@ -1,4 +1,5 @@
 import Defs._
+import IO._
 import util.control.Breaks._
 
 object Board {
@@ -15,21 +16,31 @@ object Board {
     var brd_material = new Array[Int](2)
     var brd_pList = new Array[Int](14 * 10)
 
-    var brd_history = new Array[Int](1)
+    class HistoryMove {
+        var move = NOMOVE
+        var castlePerm = 0
+        var enPas = 0
+        var fiftyMove = 0
+        var posKey = 0
+    }
+
+    class PvMove {
+        var move = NOMOVE
+        var posKey = 0
+    }
+
+    var brd_history = Array.fill[HistoryMove](MAXGAMEMOVES)(new HistoryMove())
+    var brd_PvTable = Array.fill[PvMove](PVENTRIES)(new PvMove())
 
     var brd_bookLines = new Array[Int](1)
-
     var brd_moveList = new Array[Int](MAXDEPTH * MAXPOSITIONMOVES)
     var brd_moveScores = new Array[Int](MAXDEPTH * MAXPOSITIONMOVES)
     var brd_moveListStart = new Array[Int](MAXDEPTH)
-
-    var brd_PvTable = new Array[Int](1)
     var brd_PvArray = new Array[Int](MAXDEPTH)
     var brd_searchHistory = new Array[Int](14 * BRD_SQ_NUM)
     var brd_searchKillers = new Array[Int](3 * MAXDEPTH)
 
     //board functions
-    // board functions
 
     def BoardToFen() {
         var fenStr = ""
@@ -46,14 +57,14 @@ object Board {
                     emptyCount+=1
                 } else {
                     if (emptyCount!=0) {
-                        //fenStr += String.fromCharCode("0".charCodeAt() + emptyCount)
+                        fenStr += ('0'.toInt + emptyCount).toString
                     }
                     emptyCount = 0
                     fenStr += PceChar(piece)
                 }
             }
             if (emptyCount!=0) {
-                //fenStr += String.fromCharCode("0".charCodeAt() + emptyCount)
+                fenStr += ("0".toInt + emptyCount).toString
             }
 
             if (rank != RANKS.RANK_1.id) {
@@ -67,7 +78,7 @@ object Board {
         if (brd_enPas == SQUARES.NO_SQ.id) {
             fenStr += "- "
         } else {
-            //fenStr += PrSq(brd_enPas) + " "
+            fenStr += PrSq(brd_enPas) + " "
         }
 
         if (brd_castlePerm == 0) {
@@ -91,7 +102,6 @@ object Board {
     }
 
     def CheckBoard(): Boolean = {
-
         val t_pceNum = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         val t_material = Array(0, 0)
 
@@ -131,19 +141,19 @@ object Board {
             println("Error brd_side")
             return false
         }
-        //if (GeneratePosKey()!=brd_posKey) {
-        //    println("Error brd_posKey")
-        //    return false
-       // }
+        if (GeneratePosKey()!=brd_posKey) {
+            println("Error brd_posKey")
+            return false
+        }
 
 
         true
     }
 
     def printGameLine(): String = {
-        val gameLine = ""
+        var gameLine = ""
         for (moveNum <- 0 until brd_hisPly) {
-            //gameLine += PrMove(brd_history(moveNum).move) + " "
+            gameLine += PrMove(brd_history(moveNum).move) + " "
         }
         println("Game Line: " + gameLine)
         gameLine.trim()
@@ -197,25 +207,20 @@ object Board {
 
     def PrintPceLists() {
         for (piece <- PIECES.wP.id to PIECES.bK.id) {
-            for (pceNum <- 0 until piece) {
-                //println("Piece " + PceChar(piece) + " on " + PrSq(brd_pList(PCEINDEX(piece,pceNum))))
+            for (pceNum <- 0 until brd_pceNum(piece)) {
+                val sq = brd_pList(PCEINDEX(piece,pceNum))
+                println("Piece " + PceChar(piece) + " on " + PrSq(sq))
             }
         }
-
     }
 
     def UpdateListsMaterial() {
-        var piece,sq,color = 0
-
-        for (index <- 0 until BRD_SQ_NUM) {
-            sq = index
-            piece = brd_pieces(index)
+        for (sq <- 0 until BRD_SQ_NUM) {
+            val piece = brd_pieces(sq)
             if (piece != SQUARES.OFFBOARD.id && piece != PIECES.EMPTY.id) {
-                color = PieceCol(piece).id
-
+                val color = PieceCol(piece).id
                 brd_material(color) += PieceVal(piece)
-
-                sq = brd_pList(PCEINDEX(piece,brd_pceNum(piece)))
+                brd_pList(PCEINDEX(piece,brd_pceNum(piece))) = sq
                 brd_pceNum(piece) += 1
             }
         }
@@ -247,13 +252,12 @@ object Board {
     }
 
     def PrintBoard() {
-
         var sq,piece = 0
 
-        println("\nGame Board:\n")
+        println("\nGame Board:")
 
         for (rank <- RANKS.RANK_8.id to RANKS.RANK_1.id by -1) {
-            var line =(rank+1) + "  "
+            var line =(rank+1) + " "
             for (file <- FILES.FILE_A.id to FILES.FILE_H.id) {
                 sq = FR2SQ(file,rank)
                 piece = brd_pieces(sq)
@@ -262,22 +266,22 @@ object Board {
             println(line)
         }
 
-        println("")
-        var line = "   "
+        //println("")
+        var line = "  "
         for (file <- FILES.FILE_A.id to FILES.FILE_H.id) {
-            //line += (" " + String.fromCharCode("a".charCodeAt() + file) + " ")
+            line += (" " + FileChar(file).toUpper + " ")
         }
         println(line)
-        println("side:" + SideChar(brd_side) )
-        println("enPas:" + brd_enPas)
+        println("side: " + SideChar(brd_side) )
+        println("enPas: " + brd_enPas)
         line = ""
-        if ((brd_castlePerm & CASTLEBIT.WKCA.id) != 0) line += "K"
-        if ((brd_castlePerm & CASTLEBIT.WQCA.id) != 0) line += "Q"
-        if ((brd_castlePerm & CASTLEBIT.BKCA.id) != 0) line += "k"
-        if ((brd_castlePerm & CASTLEBIT.BQCA.id) != 0) line += "q"
+        if ((brd_castlePerm & CASTLEBIT.WKCA.id) != 0) line += 'K'
+        if ((brd_castlePerm & CASTLEBIT.WQCA.id) != 0) line += 'Q'
+        if ((brd_castlePerm & CASTLEBIT.BKCA.id) != 0) line += 'k'
+        if ((brd_castlePerm & CASTLEBIT.BQCA.id) != 0) line += 'q'
 
-        println("castle:" + line)
-        //println("key:" + brd_posKey.toString(16))
+        println("castle: " + line)
+        println("key: " + brd_posKey.toHexString)
         //PrintPceLists()
     }
 
@@ -290,7 +294,7 @@ object Board {
             brd_pieces(SQ120(index)) = PIECES.EMPTY.id
         }
 
-        for (index <- 0 until 14 * 120 ) {
+        for (index <- 0 until 14 * 10 ) {
             brd_pList(index) = PIECES.EMPTY.id
         }
 
@@ -314,88 +318,80 @@ object Board {
     }
 
     def ParseFen(fen : String) {
-
-        val rank = RANKS.RANK_8.id
+        println(fen)
+        var rank = RANKS.RANK_8.id
         var file = FILES.FILE_A.id
-        val piece = 0
+        var piece = 0
         var count = 0
         var sq64 = 0
         var sq120 = 0
         var fenCnt = 0
-        //ResetBoard()
+        var continue = false
+
+        ResetBoard()
 
         while ((rank >= RANKS.RANK_1.id) && fenCnt < fen.length) {
+            continue = false
             count = 1
-            /*switch (fen(fenCnt)) {
-                case "p": piece = PIECES.bP break
-                case "r": piece = PIECES.bR break
-                case "n": piece = PIECES.bN break
-                case "b": piece = PIECES.bB break
-                case "k": piece = PIECES.bK.id break
-                case "q": piece = PIECES.bQ break
-                case "P": piece = PIECES.wP.id break
-                case "R": piece = PIECES.wR break
-                case "N": piece = PIECES.wN break
-                case "B": piece = PIECES.wB break
-                case "K": piece = PIECES.wK break
-                case "Q": piece = PIECES.wQ break
-
-                case "1":
-                case "2":
-                case "3":
-                case "4":
-                case "5":
-                case "6":
-                case "7":
-                case "8":
+            fen(fenCnt) match {
+                case 'p' => piece = PIECES.bP.id
+                case 'r' => piece = PIECES.bR.id
+                case 'n' => piece = PIECES.bN.id
+                case 'b' => piece = PIECES.bB.id
+                case 'k' => piece = PIECES.bK.id
+                case 'q' => piece = PIECES.bQ.id
+                case 'P' => piece = PIECES.wP.id
+                case 'R' => piece = PIECES.wR.id
+                case 'N' => piece = PIECES.wN.id
+                case 'B' => piece = PIECES.wB.id
+                case 'K' => piece = PIECES.wK.id
+                case 'Q' => piece = PIECES.wQ.id
+                case '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' =>
                     piece = PIECES.EMPTY.id
-                count = fen(fenCnt).charCodeAt() - "0".charCodeAt()
-                break
-
-                case "/":
-                case " ":
-                    rank-=1
-                file = FILES.FILE_A.id
-                fenCnt+=1
-                continue
-
-                default:
-                    printf("FEN error \n")
-                return
+                    count = fen(fenCnt).toInt - '0'.toInt
+                case '/' | ' ' =>
+                    rank -= 1
+                    file = FILES.FILE_A.id
+                    fenCnt += 1
+                    continue = true
+                case _ => println("FEN error \n")
             }
-            */
-            for (i <- 0 until count) {
-                sq64 = rank * 8 + file
-                sq120 = SQ120(sq64)
-                if (piece != PIECES.EMPTY.id) {
-                    brd_pieces(sq120) = piece
+            if (!continue) {
+                for (i <- 0 until count) {
+                    sq64 = rank * 8 + file
+                    sq120 = SQ120(sq64)
+                    if (piece != PIECES.EMPTY.id) {
+                        brd_pieces(sq120) = piece
+                    }
+                    file += 1
                 }
-                file+=1
+                fenCnt += 1
             }
-            fenCnt+=1
         }
 
-        //brd_side = (fen(fenCnt) == "w") ? COLORS.WHITE.id : COLORS.BLACK.id
+        brd_side = if (fen(fenCnt) == 'w') COLORS.WHITE.id else COLORS.BLACK.id
+
         fenCnt += 2
 
-        /*for (i <- 0 until 4) {
-            if (fen(fenCnt) == " ") {
+        breakable {
+        for (i <- 0 until 4) {
+            if (fen(fenCnt) == ' ') {
                 break
             }
-            switch(fen(fenCnt)) {
-                case "K": brd_castlePerm |= CASTLEBIT.WKCA break
-                case "Q": brd_castlePerm |= CASTLEBIT.WQCA break
-                case "k": brd_castlePerm |= CASTLEBIT.BKCA break
-                case "q": brd_castlePerm |= CASTLEBIT.BQCA break
-                default:	     break
+             fen(fenCnt) match {
+                case 'K' => brd_castlePerm |= CASTLEBIT.WKCA.id
+                case 'Q' => brd_castlePerm |= CASTLEBIT.WQCA.id
+                case 'k' => brd_castlePerm |= CASTLEBIT.BKCA.id
+                case 'q' => brd_castlePerm |= CASTLEBIT.BQCA.id
+                case _ => //println(println(fen(fenCnt)))
             }
-            fenCnt+=1
-        }*/
-        fenCnt+=1
+            fenCnt += 1
+        }}
+        fenCnt += 1
 
-        if (fen(fenCnt) != "-") {
-            //file = fen(fenCnt).charCodeAt() - "a".charCodeAt()
-            //rank = fen(fenCnt+1).charCodeAt() - "1".charCodeAt()
+        if (fen(fenCnt) != '-') {
+            file = fen(fenCnt).toInt - 'a'.toInt
+            rank = fen(fenCnt+1).toInt - '1'.toInt
             println("fen(fenCnt):" + fen(fenCnt) + " File:" + file + " Rank:" + rank)
             brd_enPas = FR2SQ(file,rank)
         }
@@ -430,6 +426,7 @@ object Board {
             dir = RkDir(index)
             t_sq = sq + dir
             pce = brd_pieces(t_sq)
+            breakable{
             while(pce != SQUARES.OFFBOARD.id) {
                 if (pce != PIECES.EMPTY.id) {
                     if (PieceRookQueen(pce) && PieceCol(pce).id == side) {
@@ -439,13 +436,14 @@ object Board {
                 }
                 t_sq += dir
                 pce = brd_pieces(t_sq)
-            }
+            }}
         }
 
         for (index <- 0 until 4) {
             dir = BiDir(index)
             t_sq = sq + dir
             pce = brd_pieces(t_sq)
+            breakable {
             while(pce != SQUARES.OFFBOARD.id) {
                 if (pce != PIECES.EMPTY.id) {
                     if (PieceBishopQueen(pce) && PieceCol(pce).id == side) {
@@ -455,7 +453,7 @@ object Board {
                 }
                 t_sq += dir
                 pce = brd_pieces(t_sq)
-            }
+            }}
         }
 
         for (index <- 0 until 8) {
