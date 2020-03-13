@@ -82,7 +82,7 @@ object Search {
         var alpha = _alpha
         val beta = _beta
         
-        if ((srch_nodes & 2047) == 0) CheckUp()
+        //if ((srch_nodes & 2047) == 0) CheckUp()
 
         srch_nodes += 1
 
@@ -111,7 +111,7 @@ object Search {
         val OldAlpha = alpha
         var BestMove = NOMOVE
         val PvMove = ProbePvTable()
-
+        var Move = 0
         Score = -INFINITE
 
         if (PvMove != NOMOVE) {
@@ -126,8 +126,9 @@ object Search {
 
         for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1) )  {
             PickNextMove(MoveNum)
+            Move = brd_moveList(MoveNum)
 
-            if (MakeMove(brd_moveList(MoveNum)))  {
+            if (MakeMove(Move))  {
                 Legal += 1
                 Score = -Quiescence(-beta, -alpha)
                 TakeMove()
@@ -142,7 +143,7 @@ object Search {
                         return beta
                     }
                     alpha = Score
-                    BestMove = brd_moveList(MoveNum)
+                    BestMove = Move
                 }
             }
         }
@@ -158,15 +159,15 @@ object Search {
         var alpha = _alpha
         val beta = _beta
         var depth = _depth
-        
+        srch_nodes += 1
         if (depth <= 0) {
-            //return Quiescence(alpha, beta)
-            return EvalPosition()
+            return Quiescence(alpha, beta)
+            //return EvalPosition()
         }
         
         //if ((srch_nodes & 2047) == 0) CheckUp()
 
-        srch_nodes += 1
+
 
         if ((IsRepetition() || brd_fiftyMove >= 100) && brd_ply != 0) {
             return 0
@@ -184,7 +185,7 @@ object Search {
 
         var Score = -INFINITE
 
-        /*if (DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
+        if (DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
             val ePStore = brd_enPas
             if (brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
             brd_side ^= 1
@@ -202,7 +203,7 @@ object Search {
             if (Score >= beta) {
                 return beta
             }
-        }*/
+        }
 
         GenerateMoves()
 
@@ -213,7 +214,7 @@ object Search {
         var Move = NOMOVE
         Score = -INFINITE
         
-        /*val PvMove = ProbePvTable()
+        val PvMove = ProbePvTable()
 
         if (PvMove != NOMOVE) {
             breakable {
@@ -223,10 +224,10 @@ object Search {
                     break
                 }
             }}
-        }*/
+        }
 
         for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1))  {
-            //PickNextMove(MoveNum)
+            PickNextMove(MoveNum)
             Move = brd_moveList(MoveNum)
 
             if (MakeMove(Move))  {
@@ -244,15 +245,15 @@ object Search {
                         srch_fh += 1
 
                         if ((Move & MFLAGCAP) == 0) {
-                            //brd_searchKillers(MAXDEPTH + brd_ply) = brd_searchKillers(brd_ply)
-                            //brd_searchKillers(brd_ply) = brd_moveList(MoveNum)
+                            brd_searchKillers(MAXDEPTH + brd_ply) = brd_searchKillers(brd_ply)
+                            brd_searchKillers(brd_ply) = brd_moveList(MoveNum)
                         }
                         return beta
                     }
                     alpha = Score
                     BestMove = Move
                     if ((BestMove & MFLAGCAP) == 0) {
-                        //brd_searchHistory( brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove) ) += depth
+                        brd_searchHistory( brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove) ) += depth
                     }
                 }
             }
@@ -397,7 +398,7 @@ object Search {
                 line += " " + PrMove(brd_PvArray(pvNum))
             }
             if (currentDepth != 1) {
-                println(srch_fhf.toDouble + " " + srch_fh.toDouble)
+                //println(srch_fhf.toDouble + " " + srch_fh.toDouble)
                 line += " Ordering: " + (srch_fhf.toDouble/srch_fh.toDouble)*100.floor + "%"
             }
             println(line);

@@ -87,7 +87,7 @@ object Main {
 
     def main(args: Array[String]): Unit = {
         init()
-        //ParseFen("R6r/8/8/2K5/5k2/8/8/r6R w - - 0 1")
+        //ParseFen("3R4/2Q5/4qppk/pp2B3/8/P7/8/7K w - - 1 0")
         ParseFen(START_FEN)
         //PrintBoard()
         //PerftTest(5)
