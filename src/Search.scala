@@ -1,10 +1,11 @@
 import Defs._
-import Board._ 
+import Board._
 import PVTable._
 import Evaluate._
 import MoveGen._
 import MakeMove._
 import IO._
+import java.util.Calendar._
 import util.control.Breaks._
 
 object Search {
@@ -13,15 +14,15 @@ object Search {
     var srch_fhf = 0
     var srch_depth = 0
     var srch_time = 0
-    var srch_start = 0
+    var srch_start : Long = 0
     var srch_stop = false
     var srch_best = 0
     var srch_thinking = false
+    var srch_fen = ""
 
     def CheckUp() {
-        var time = System.currentTimeMillis()
-        //println(time)
-        if ((time-srch_start) > srch_time ) srch_stop = true
+        val time = System.currentTimeMillis
+        if ((time - srch_start) > srch_time ) srch_stop = true
     }
 
     def PickNextMove(moveNum : Int) {
@@ -74,7 +75,7 @@ object Search {
         srch_nodes = 0
         srch_fh = 0
         srch_fhf = 0
-        srch_start = 0//$.now()
+        srch_start = System.currentTimeMillis
         srch_stop = false
     }
 
@@ -82,7 +83,7 @@ object Search {
         var alpha = _alpha
         val beta = _beta
         
-        //if ((srch_nodes & 2047) == 0) CheckUp()
+        if ((srch_nodes & 2047) == 0) CheckUp()
 
         srch_nodes += 1
 
@@ -135,7 +136,7 @@ object Search {
                 if (srch_stop) return 0
                 if (Score > alpha) {
                     if (Score >= beta) {
-                        if (Legal==1) {
+                        if (Legal == 1) {
                             srch_fhf += 1
                         }
                         srch_fh += 1
@@ -159,15 +160,14 @@ object Search {
         var alpha = _alpha
         val beta = _beta
         var depth = _depth
-        srch_nodes += 1
+
         if (depth <= 0) {
             return Quiescence(alpha, beta)
-            //return EvalPosition()
         }
         
-        //if ((srch_nodes & 2047) == 0) CheckUp()
+        if ((srch_nodes & 2047) == 0) CheckUp()
 
-
+        srch_nodes += 1
 
         if ((IsRepetition() || brd_fiftyMove >= 100) && brd_ply != 0) {
             return 0
@@ -177,15 +177,14 @@ object Search {
             return EvalPosition()
         }
 
-        val InCheck = SqAttacked(brd_pList(PCEINDEX(Kings(brd_side).id, 0)), brd_side ^ 1)
-
+        val InCheck = SqAttacked(brd_pList(PCEINDEX(Kings(brd_side).id, 0)), brd_side^1)
         if (InCheck) {
             depth += 1
         }
 
         var Score = -INFINITE
 
-        if (DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
+        /*if (DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
             val ePStore = brd_enPas
             if (brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
             brd_side ^= 1
@@ -203,7 +202,7 @@ object Search {
             if (Score >= beta) {
                 return beta
             }
-        }
+        }*/
 
         GenerateMoves()
 
@@ -230,30 +229,32 @@ object Search {
             PickNextMove(MoveNum)
             Move = brd_moveList(MoveNum)
 
-            if (MakeMove(Move))  {
+            if (MakeMove(Move)) {
                 Legal += 1
-                Score = -AlphaBeta( -beta, -alpha, depth-1, true)
+                Score = -AlphaBeta(-beta, -alpha, depth-1, true)
+
                 TakeMove()
 
                 if (srch_stop) return 0
 
                 if (Score > alpha) {
                     if (Score >= beta) {
-                        if (Legal==1) {
+                        if (Legal == 1) {
                             srch_fhf += 1
                         }
                         srch_fh += 1
 
                         if ((Move & MFLAGCAP) == 0) {
                             brd_searchKillers(MAXDEPTH + brd_ply) = brd_searchKillers(brd_ply)
-                            brd_searchKillers(brd_ply) = brd_moveList(MoveNum)
+                            brd_searchKillers(brd_ply) = Move
                         }
                         return beta
                     }
                     alpha = Score
                     BestMove = Move
+
                     if ((BestMove & MFLAGCAP) == 0) {
-                        brd_searchHistory( brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove) ) += depth
+                        brd_searchHistory(brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove)) += depth * depth
                     }
                 }
             }
@@ -294,102 +295,22 @@ object Search {
     $("#TimeOut").text("Time: " + (($.now()-srch_start)/1000).toFixed(1) + "s")
     */
 
-    /*def SearchPosition1(depth : Int) {
-        //var bestMove = NOMOVE
-       // var bestScore = -INFINITE
-        //var pvNum = 0
-        //var line = ""
-
-        //ClearForSearch()
-
-        /*if (GameController.BookLoaded == true) {
-            bestMove = BookMove()
-
-            if (bestMove != NOMOVE) {
-                $("#OrderingOut").text("Ordering:")
-                $("#DepthOut").text("Depth: ")
-                $("#ScoreOut").text("Score:")
-                $("#NodesOut").text("Nodes:")
-                $("#TimeOut").text("Time: 0s")
-                $("#BestOut").text("BestMove: " + PrMove(bestMove) + '(Book)')
-                srch_best = bestMove
-                srch_thinking = false
-                return
-            }
-        }*/
-
-        // iterative deepening
-        //for (currentDepth <- 1 to depth) {
-           /* bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true)
-            //if (srch_stop) break
-                pvNum = GetPvLine(currentDepth)
-                bestMove = brd_PvArray(0)
-                line = "Depth: " + currentDepth + " best: " + PrMove(bestMove) + " Score: " + bestScore + " nodes: " + srch_nodes
-
-                if (currentDepth!=1) {
-                    //line += (" Ordering:" + ((srch_fhf/srch_fh)*100) + "%")
-                }
-                println(line)
-
-                domUpdate_depth = currentDepth
-                domUpdate_move = bestMove
-                domUpdate_score = bestScore
-                domUpdate_nodes = srch_nodes
-                domUpdate_ordering = ((srch_fhf/srch_fh)*100).toFixed(2)*/
-
-            var bestMove = NOMOVE;
-            var bestScore = -INFINITE;
-            var currentDepth = 0;
-            var pvMoves = 0;
-            var pvNum = 0;
-            var rootDepth = 0
-            ClearForSearch();
-
-            //if (EngineOptions->UseBook == TRUE) bestMove = GetBookMove(pos);
-
-            //printf("Search depth:%d\n",info->depth);
-
-            // iterative deepening
-            if (bestMove == NOMOVE) {
-                for ( currentDepth <- 1 to depth ) {
-                    rootDepth = currentDepth;
-                    bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true);
-
-                    //if (info->stopped == TRUE) break;
-
-                    pvMoves = GetPvLine(currentDepth);
-                    bestMove = brd_PvArray(0)
-                    printf("info score cp %d depth %d nodes %ld ",bestScore,currentDepth,srch_nodes)
-                    pvMoves = GetPvLine(currentDepth)
-                        for (pvNum <- 0 until pvMoves) {
-                            printf(" %s",PrMove(brd_PvArray(pvNum)))
-                        }
-                        println("\n");
-                    //printf("Hits:%d Overwrite:%d NewWrite:%d Cut:%d\nOrdering %.2f NullCut:%d\n",pos->HashTable->hit,pos->HashTable->overWrite,pos->HashTable->newWrite,pos->HashTable->cut,
-                    //(info->fhf/info->fh)*100,info->nullCut);
-                }
-            }
-        //}
-
-        //$("#BestOut").text("BestMove: " + PrMove(bestMove))
-        //UpdateDOMStats()
-        srch_best = bestMove
-        srch_thinking = false
-    }
-    */
-
     def SearchPosition(depth : Int) {
-        var bestMove = NOMOVE;
-        var bestScore = -INFINITE;
-        var pvMoves = 0;
+        println("FEN: " + srch_fen)
+        println("Search started...")
+        var bestMove = NOMOVE
+        var bestScore = -INFINITE
+        var pvMoves = 0
         var line = ""
 
-        ClearForSearch();
-
+        ClearForSearch()
+        srch_time = 3*1000
+        breakable {
         for (currentDepth <- 1 to depth ) {
-            bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true);
-            //if (info->stopped == TRUE) break;
+            bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true)
+            if (srch_stop) break
             bestMove = ProbePvTable()
+
             line = "D: " + currentDepth + " Best: " + PrMove(bestMove) + " Score: " + bestScore + " nodes: " + srch_nodes
 
             pvMoves = GetPvLine(currentDepth)
@@ -399,11 +320,11 @@ object Search {
             }
             if (currentDepth != 1) {
                 //println(srch_fhf.toDouble + " " + srch_fh.toDouble)
-                line += " Ordering: " + (srch_fhf.toDouble/srch_fh.toDouble)*100.floor + "%"
+                line += " Ordering: " + ((srch_fhf.toDouble/srch_fh.toDouble)*100).formatted("%.2f") + "%"
             }
-            println(line);
-        }
-
+            println(line)
+        }}
+        println("Search stopped... Best Move: " + PrMove(bestMove))
         srch_best = bestMove
         srch_thinking = false
     }

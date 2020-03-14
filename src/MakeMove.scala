@@ -6,7 +6,7 @@ object MakeMove {
     def ClearPiece(sq : Int) {
 
         val pce = brd_pieces(sq)
-        val col = PieceCol(pce).id
+        val col = PieceCol(pce)
         var t_pceNum = -1
 
         HASH_PCE(pce,sq)
@@ -27,7 +27,7 @@ object MakeMove {
 
     def AddPiece(sq : Int, pce : Int) {
 
-        val col = PieceCol(pce).id
+        val col = PieceCol(pce)
 
         HASH_PCE(pce,sq)
 
@@ -183,7 +183,7 @@ object MakeMove {
 
         if (PROMOTED(move) != PIECES.EMPTY.id)   {
             ClearPiece(from)
-            val pce = if (PieceCol(PROMOTED(move)).id == COLORS.WHITE.id) PIECES.wP.id else PIECES.bP.id
+            val pce = if (PieceCol(PROMOTED(move)) == COLORS.WHITE.id) PIECES.wP.id else PIECES.bP.id
             AddPiece(from, pce)
         }
     }

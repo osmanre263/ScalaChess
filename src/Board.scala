@@ -1,5 +1,6 @@
 import Defs._
 import IO._
+import Search._
 import util.control.Breaks._
 
 object Board {
@@ -104,7 +105,6 @@ object Board {
     def CheckBoard(): Boolean = {
         val t_pceNum = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         val t_material = Array(0, 0)
-
         var t_piece,sq120=0
 
         // check piece lists
@@ -122,8 +122,8 @@ object Board {
         for (sq64 <- 0 until 64) {
             sq120 = SQ120(sq64)
             t_piece = brd_pieces(sq120)
-            t_pceNum(t_piece)+=1
-            t_material(PieceCol(t_piece).id) += PieceVal(t_piece)
+            t_pceNum(t_piece) += 1
+            if (PieceCol(t_piece) != 2) t_material(PieceCol(t_piece)) += PieceVal(t_piece)
         }
 
         for (t_piece <- PIECES.wP.id to PIECES.bK.id) {
@@ -146,8 +146,7 @@ object Board {
             return false
         }
 
-
-        true
+        return true
     }
 
     def printGameLine(): String = {
@@ -218,7 +217,7 @@ object Board {
         for (sq <- 0 until BRD_SQ_NUM) {
             val piece = brd_pieces(sq)
             if (piece != SQUARES.OFFBOARD.id && piece != PIECES.EMPTY.id) {
-                val color = PieceCol(piece).id
+                val color = PieceCol(piece)
                 brd_material(color) += PieceVal(piece)
                 brd_pList(PCEINDEX(piece,brd_pceNum(piece))) = sq
                 brd_pceNum(piece) += 1
@@ -318,7 +317,6 @@ object Board {
     }
 
     def ParseFen(fen : String) {
-        println(fen)
         var rank = RANKS.RANK_8.id
         var file = FILES.FILE_A.id
         var piece = 0
@@ -327,6 +325,8 @@ object Board {
         var sq120 = 0
         var fenCnt = 0
         var continue = false
+
+        srch_fen = fen
 
         ResetBoard()
 
@@ -417,7 +417,7 @@ object Board {
 
         for (index <- 0 until 8) {
             pce = brd_pieces(sq + KnDir(index))
-            if (pce != SQUARES.OFFBOARD.id && PieceKnight(pce) && PieceCol(pce).id == side) {
+            if (pce != SQUARES.OFFBOARD.id && PieceKnight(pce) && PieceCol(pce) == side) {
                 return true
             }
         }
@@ -429,7 +429,7 @@ object Board {
             breakable{
             while(pce != SQUARES.OFFBOARD.id) {
                 if (pce != PIECES.EMPTY.id) {
-                    if (PieceRookQueen(pce) && PieceCol(pce).id == side) {
+                    if (PieceRookQueen(pce) && PieceCol(pce) == side) {
                         return true
                     }
                     break
@@ -446,7 +446,7 @@ object Board {
             breakable {
             while(pce != SQUARES.OFFBOARD.id) {
                 if (pce != PIECES.EMPTY.id) {
-                    if (PieceBishopQueen(pce) && PieceCol(pce).id == side) {
+                    if (PieceBishopQueen(pce) && PieceCol(pce) == side) {
                         return true
                     }
                     break
@@ -458,7 +458,7 @@ object Board {
 
         for (index <- 0 until 8) {
             pce = brd_pieces(sq + KiDir(index))
-            if (pce != SQUARES.OFFBOARD.id && PieceKing(pce) && PieceCol(pce).id == side) {
+            if (pce != SQUARES.OFFBOARD.id && PieceKing(pce) && PieceCol(pce) == side) {
                 return true
             }
         }

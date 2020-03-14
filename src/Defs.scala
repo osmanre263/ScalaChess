@@ -50,8 +50,8 @@ object Defs {
     var PieceVal = Array( 0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000)
 
     var PieceCol = Array(
-        COLORS.BOTH, COLORS.WHITE, COLORS.WHITE, COLORS.WHITE, COLORS.WHITE, COLORS.WHITE, COLORS.WHITE,
-        COLORS.BLACK, COLORS.BLACK, COLORS.BLACK, COLORS.BLACK, COLORS.BLACK, COLORS.BLACK
+        COLORS.BOTH.id, COLORS.WHITE.id, COLORS.WHITE.id, COLORS.WHITE.id, COLORS.WHITE.id, COLORS.WHITE.id, COLORS.WHITE.id,
+        COLORS.BLACK.id, COLORS.BLACK.id, COLORS.BLACK.id, COLORS.BLACK.id, COLORS.BLACK.id, COLORS.BLACK.id
     )
 
     var PiecePawn = Array(false, true, false, false, false, false, false, true, false, false, false, false, false)
@@ -135,8 +135,8 @@ object Defs {
     }
 
     def SQOFFBOARD(sq : Int): Boolean = {
-        if(FilesBrd(sq)==SQUARES.OFFBOARD.id) return true
-        false
+        if (FilesBrd(sq) == SQUARES.OFFBOARD.id) return true
+        return false
     }
 
     def HASH_PCE(pce : Int,sq : Int): Unit = brd_posKey ^= PieceKeys(pce * 120 + sq)

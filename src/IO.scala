@@ -10,10 +10,8 @@ object IO {
         println("MoveList:")
 
         for(index <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1) ) {
-
             move = brd_moveList(index)
-            println("Move:" + (index+1) + " > " + PrMove(move))
-
+            println(PrMove(move))
         }
     }
 
@@ -32,6 +30,7 @@ object IO {
         val rf = RanksBrd(FROMSQ(move))
         val ft = FilesBrd(TOSQ(move))
         val rt = RanksBrd(TOSQ(move))
+
         MvStr = FileChar(ff).toString + RankChar(rf).toString + FileChar(ft).toString + RankChar(rt).toString// + ('1'.toInt + rf).toString + ('a'.toInt + ft).toString + ('1'.toInt + rt).toString
 
         val promoted = PROMOTED(move)

@@ -7,7 +7,7 @@ object Evaluate {
     var RookSemiOpenFile = 5
     var QueenOpenFile = 5
     var QueenSemiOpenFile = 3
-    var BishopPair = 30
+    var BishopPair = 40
 
     var PawnRanksWhite = new Array[Int](10)
     var PawnRanksBlack = new Array[Int](10)
@@ -73,7 +73,7 @@ object Evaluate {
         var score = brd_material(COLORS.WHITE.id) - brd_material(COLORS.BLACK.id)
         
         if(0 == brd_pceNum(PIECES.wP.id) && 0 == brd_pceNum(PIECES.bP.id) && MaterialDraw()) {
-            return 0
+            //return 0
         }
 
         PawnsInit()
@@ -111,31 +111,31 @@ object Evaluate {
         pce = PIECES.wN.id
         for(pceNum <- 0 until brd_pceNum(pce) ) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score += KnightTable(SQ64(sq))
+            //score += KnightTable(SQ64(sq))
         }
 
         pce = PIECES.bN.id
         for(pceNum <- 0 until brd_pceNum(pce) ) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score -= KnightTable(MIRROR64(SQ64(sq)))
+            //score -= KnightTable(MIRROR64(SQ64(sq)))
         }
 
         pce = PIECES.wB.id
         for(pceNum <- 0 until brd_pceNum(pce) ) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score += BishopTable(SQ64(sq))
+            //score += BishopTable(SQ64(sq))
         }
 
         pce = PIECES.bB.id
         for(pceNum <- 0 until brd_pceNum(pce) ) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score -= BishopTable(MIRROR64(SQ64(sq)))
+            //score -= BishopTable(MIRROR64(SQ64(sq)))
         }
 
         pce = PIECES.wR.id
         for(pceNum <- 0 until brd_pceNum(pce) ) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score += RookTable(SQ64(sq))
+            //score += RookTable(SQ64(sq))
             file = FilesBrd(sq)+1
             if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
                 if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
@@ -149,7 +149,7 @@ object Evaluate {
         pce = PIECES.bR.id
         for(pceNum <- 0 until brd_pceNum(pce)) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score -= RookTable(MIRROR64(SQ64(sq)))
+            //score -= RookTable(MIRROR64(SQ64(sq)))
             file = FilesBrd(sq)+1
             if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
                 if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
@@ -163,7 +163,7 @@ object Evaluate {
         pce = PIECES.wQ.id
         for(pceNum <- 0 until brd_pceNum(pce)) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score += RookTable(SQ64(sq))
+            //score += RookTable(SQ64(sq))
             file = FilesBrd(sq)+1
             if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
                 if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
@@ -177,7 +177,7 @@ object Evaluate {
         pce = PIECES.bQ.id
         for(pceNum <- 0 until brd_pceNum(pce)) {
             sq = brd_pList(PCEINDEX(pce,pceNum))
-            score -= RookTable(MIRROR64(SQ64(sq)))
+            //score -= RookTable(MIRROR64(SQ64(sq)))
             file = FilesBrd(sq)+1
             if(PawnRanksBlack(file)==RANKS.RANK_1.id) {
                 if(PawnRanksWhite(file)==RANKS.RANK_8.id) {
@@ -192,18 +192,18 @@ object Evaluate {
         sq = brd_pList(PCEINDEX(pce,0))
 
         if( brd_material(COLORS.BLACK.id) <= ENDGAME_MAT ) {
-            score += KingE(SQ64(sq))
+            //score += KingE(SQ64(sq))
         } else {
-            score += KingO(SQ64(sq))
+            //score += KingO(SQ64(sq))
         }
 
         pce = PIECES.bK.id
         sq = brd_pList(PCEINDEX(pce,0))
 
         if( brd_material(COLORS.WHITE.id) <= ENDGAME_MAT ) {
-            score -= KingE(MIRROR64(SQ64(sq)))
+            //score -= KingE(MIRROR64(SQ64(sq)))
         } else {
-            score -= KingO(MIRROR64(SQ64(sq)))
+            //score -= KingO(MIRROR64(SQ64(sq)))
         }
 
         //if(brd_pceNum(PIECES.wB.id) >= 2) score += BishopPair

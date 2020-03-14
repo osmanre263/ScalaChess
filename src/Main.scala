@@ -2,8 +2,10 @@ import Defs._
 import Search._
 import Board._
 import MoveGen._
+import MakeMove._
 import Evaluate._
 import Perft._
+import IO._
 
 object Main {
     def InitBoardVars() {
@@ -31,8 +33,6 @@ object Main {
     }
 
     def InitSq120To64() {
-        val file = FILES.FILE_A.id
-        val rank = RANKS.RANK_1.id
         var sq = SQUARES.A1.id
         var sq64 = 0
 
@@ -55,10 +55,7 @@ object Main {
     }
 
     def InitFilesRanksBrd() {
-        var file = FILES.FILE_A.id
-        var rank = RANKS.RANK_1.id
         var sq = SQUARES.A1.id
-        var sq64 = 0
 
         for(index <- 0 until BRD_SQ_NUM ) {
             FilesBrd(index) = SQUARES.OFFBOARD.id
@@ -87,11 +84,14 @@ object Main {
 
     def main(args: Array[String]): Unit = {
         init()
-        //ParseFen("3R4/2Q5/4qppk/pp2B3/8/P7/8/7K w - - 1 0")
+        var one = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
         ParseFen(START_FEN)
         //PrintBoard()
-        //PerftTest(5)
+        GenerateMoves()
         //PrintPceLists()
-        SearchPosition(5)
+        //PrintMoveList()
+        CheckBoard()
+        SearchPosition(10)
     }
 }

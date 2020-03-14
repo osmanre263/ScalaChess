@@ -40,38 +40,33 @@ object MoveGen {
     }
 
     def AddCaptureMove(move : Int) {
-        brd_moveList(brd_moveListStart(brd_ply + 1)) = move
-        //needs to be tested
-        brd_moveListStart(brd_ply + 1) += 1
-        val index = brd_moveListStart(brd_ply + 1)
-        val score = CAPTURED(move) * 14 + brd_pieces(FROMSQ(move))
-        val finalScore = MvvLvaScores(score) + 1000000
-        brd_moveScores(index) = finalScore
+        brd_moveList(brd_moveListStart(brd_ply+1)) = move
+        brd_moveScores(brd_moveListStart(brd_ply+1)) = MvvLvaScores(CAPTURED(move)*14+ brd_pieces(FROMSQ(move))) + 1000000
+        brd_moveListStart(brd_ply+1) += 1
     }
 
     def AddQuietMove(move : Int) {
         brd_moveList(brd_moveListStart(brd_ply + 1)) = move
+        brd_moveScores(brd_moveListStart(brd_ply+1)) = 0
 
         if (brd_searchKillers(brd_ply) == move) {
             brd_moveScores(brd_moveListStart(brd_ply + 1)) = 900000
         } else if (brd_searchKillers(MAXDEPTH + brd_ply) == move) {
             brd_moveScores(brd_moveListStart(brd_ply + 1)) = 800000
         } else {
-            brd_moveScores(brd_moveListStart(brd_ply + 1)) = brd_searchHistory( brd_pieces(FROMSQ(move)) * BRD_SQ_NUM + TOSQ(move) )
+            brd_moveScores(brd_moveListStart(brd_ply + 1)) = brd_searchHistory(brd_pieces(FROMSQ(move))*BRD_SQ_NUM+TOSQ(move))
         }
         brd_moveListStart(brd_ply + 1) += 1
     }
 
     def AddEnPassantMove(move : Int) {
         brd_moveList(brd_moveListStart(brd_ply + 1)) = move
-        //needs to be tested
-        brd_moveListStart(brd_ply + 1) += 1
-        val index = brd_moveListStart(brd_ply + 1)
-        brd_moveScores(index) = 105 + 1000000
+        brd_moveScores(brd_moveListStart(brd_ply+1)) = 105 + 1000000
+        brd_moveListStart(brd_ply+1) += 1
     }
 
     def AddWhitePawnCaptureMove(from : Int, to : Int, cap : Int) {
-        if (RanksBrd(from)==RANKS.RANK_7.id) {
+        if (RanksBrd(from) == RANKS.RANK_7.id) {
             AddCaptureMove(MOVE(from,to,cap,PIECES.wQ.id,0))
             AddCaptureMove(MOVE(from,to,cap,PIECES.wR.id,0))
             AddCaptureMove(MOVE(from,to,cap,PIECES.wB.id,0))
@@ -82,7 +77,7 @@ object MoveGen {
     }
 
     def AddWhitePawnQuietMove(from : Int, to : Int) {
-        if (RanksBrd(from)==RANKS.RANK_7.id) {
+        if (RanksBrd(from) == RANKS.RANK_7.id) {
             AddQuietMove(MOVE(from,to,PIECES.EMPTY.id,PIECES.wQ.id,0))
             AddQuietMove(MOVE(from,to,PIECES.EMPTY.id,PIECES.wR.id,0))
             AddQuietMove(MOVE(from,to,PIECES.EMPTY.id,PIECES.wB.id,0))
@@ -93,7 +88,7 @@ object MoveGen {
     }
 
     def AddBlackPawnCaptureMove(from : Int, to : Int, cap : Int) {
-        if (RanksBrd(from)==RANKS.RANK_2.id) {
+        if (RanksBrd(from) == RANKS.RANK_2.id) {
             AddCaptureMove(MOVE(from,to,cap,PIECES.bQ.id,0))
             AddCaptureMove(MOVE(from,to,cap,PIECES.bR.id,0))
             AddCaptureMove(MOVE(from,to,cap,PIECES.bB.id,0))
@@ -104,7 +99,7 @@ object MoveGen {
     }
 
     def AddBlackPawnQuietMove(from : Int, to : Int) {
-        if (RanksBrd(from)==RANKS.RANK_2.id) {
+        if (RanksBrd(from) == RANKS.RANK_2.id) {
             AddQuietMove(MOVE(from,to,PIECES.EMPTY.id,PIECES.bQ.id,0))
             AddQuietMove(MOVE(from,to,PIECES.EMPTY.id,PIECES.bR.id,0))
             AddQuietMove(MOVE(from,to,PIECES.EMPTY.id,PIECES.bB.id,0))
@@ -126,8 +121,10 @@ object MoveGen {
 
         if (brd_side == COLORS.WHITE.id) {
             pceType = PIECES.wP.id
+
             for(pceNum <- 0 until brd_pceNum(pceType)) {
                 sq = brd_pList(PCEINDEX(pceType,pceNum))
+
                 if (brd_pieces(sq + 10) == PIECES.EMPTY.id) {
                     AddWhitePawnQuietMove(sq, sq+10)
                     if (RanksBrd(sq) == RANKS.RANK_2.id && brd_pieces(sq + 20) == PIECES.EMPTY.id) {
@@ -135,10 +132,11 @@ object MoveGen {
                     }
                 }
 
-                if (!SQOFFBOARD(sq + 9) && PieceCol(brd_pieces(sq + 9)).id == COLORS.BLACK.id) {
+                if (!SQOFFBOARD(sq + 9) && PieceCol(brd_pieces(sq + 9)) == COLORS.BLACK.id) {
                     AddWhitePawnCaptureMove(sq, sq+9, brd_pieces(sq + 9))
                 }
-                if (!SQOFFBOARD(sq + 11) && PieceCol(brd_pieces(sq + 11)).id == COLORS.BLACK.id) {
+
+                if (!SQOFFBOARD(sq + 11) && PieceCol(brd_pieces(sq + 11)) == COLORS.BLACK.id) {
                     AddWhitePawnCaptureMove(sq, sq+11, brd_pieces(sq + 11))
                 }
 
@@ -146,11 +144,13 @@ object MoveGen {
                     if (sq + 9 == brd_enPas) {
                         AddEnPassantMove(MOVE(sq,sq + 9,PIECES.EMPTY.id,PIECES.EMPTY.id,MFLAGEP))
                     }
+
                     if (sq + 11 == brd_enPas) {
                         AddEnPassantMove(MOVE(sq,sq + 11,PIECES.EMPTY.id,PIECES.EMPTY.id,MFLAGEP))
                     }
                 }
             }
+
             if ((brd_castlePerm & CASTLEBIT.WKCA.id) != 0) {
                 if (brd_pieces(SQUARES.F1.id) == PIECES.EMPTY.id && brd_pieces(SQUARES.G1.id) == PIECES.EMPTY.id) {
                     if (!SqAttacked(SQUARES.E1.id, COLORS.BLACK.id) && !SqAttacked(SQUARES.F1.id, COLORS.BLACK.id)) {
@@ -167,10 +167,10 @@ object MoveGen {
                 }
             }
 
-            pceType = PIECES.wN.id // HACK to set for loop other pieces
-
+            //pceType = PIECES.wN.id // HACK to set for loop other pieces
         } else {
             pceType = PIECES.bP.id
+
             for(pceNum <- 0 until brd_pceNum(pceType) ) {
                 sq = brd_pList(PCEINDEX(pceType,pceNum))
                 if (brd_pieces(sq - 10) == PIECES.EMPTY.id) {
@@ -180,22 +180,25 @@ object MoveGen {
                     }
                 }
 
-                if (!SQOFFBOARD(sq - 9) && PieceCol(brd_pieces(sq - 9)).id == COLORS.WHITE.id) {
+                if (!SQOFFBOARD(sq - 9) && PieceCol(brd_pieces(sq - 9)) == COLORS.WHITE.id) {
                     AddBlackPawnCaptureMove(sq, sq-9, brd_pieces(sq - 9))
                 }
 
-                if (!SQOFFBOARD(sq - 11) && PieceCol(brd_pieces(sq - 11)).id == COLORS.WHITE.id) {
+                if (!SQOFFBOARD(sq - 11) && PieceCol(brd_pieces(sq - 11)) == COLORS.WHITE.id) {
                     AddBlackPawnCaptureMove(sq, sq-11, brd_pieces(sq - 11))
                 }
+
                 if (brd_enPas != SQUARES.NO_SQ.id) {
                     if (sq - 9 == brd_enPas) {
                         AddEnPassantMove(MOVE(sq,sq - 9,PIECES.EMPTY.id,PIECES.EMPTY.id,MFLAGEP))
                     }
+
                     if (sq - 11 == brd_enPas) {
                         AddEnPassantMove(MOVE(sq,sq - 11,PIECES.EMPTY.id,PIECES.EMPTY.id,MFLAGEP))
                     }
                 }
             }
+
             if ((brd_castlePerm & CASTLEBIT.BKCA.id) != 0) {
                 if (brd_pieces(SQUARES.F8.id) == PIECES.EMPTY.id && brd_pieces(SQUARES.G8.id) == PIECES.EMPTY.id) {
                     if (!SqAttacked(SQUARES.E8.id, COLORS.WHITE.id) && !SqAttacked(SQUARES.F8.id, COLORS.WHITE.id)) {
@@ -212,7 +215,7 @@ object MoveGen {
                 }
             }
 
-            pceType = PIECES.bN.id // HACK to set for loop other pieces
+            //pceType = PIECES.bN.id // HACK to set for loop other pieces
         }
 
         pceIndex = LoopSlideIndex(brd_side)
@@ -229,7 +232,7 @@ object MoveGen {
                     breakable {
                     while (!SQOFFBOARD(t_sq)) {
                         if (brd_pieces(t_sq) != PIECES.EMPTY.id) {
-                            if (PieceCol(brd_pieces(t_sq)).id == (brd_side ^ 1)) {
+                            if (PieceCol(brd_pieces(t_sq)) == (brd_side ^ 1)) {
                                 AddCaptureMove(MOVE(sq, t_sq, brd_pieces(t_sq), PIECES.EMPTY.id, 0))
                             }
                             break
@@ -257,7 +260,7 @@ object MoveGen {
 
                     if (!SQOFFBOARD(t_sq)) {
                         if (brd_pieces(t_sq) != PIECES.EMPTY.id) {
-                            if (PieceCol(brd_pieces(t_sq)).id == (brd_side ^ 1)) {
+                            if (PieceCol(brd_pieces(t_sq)) == (brd_side ^ 1)) {
                                 AddCaptureMove(MOVE(sq, t_sq, brd_pieces(t_sq), PIECES.EMPTY.id, 0))
                             }
                         } else {
@@ -272,6 +275,9 @@ object MoveGen {
     }
 
     def GenerateCaptures() {
+
+        brd_moveListStart(brd_ply + 1) = brd_moveListStart(brd_ply)
+
         var pceType = 0
         var pceIndex = 0
         var pce = 0
@@ -279,17 +285,15 @@ object MoveGen {
         var t_sq = 0
         var dir = 0
 
-        brd_moveListStart(brd_ply + 1) = brd_moveListStart(brd_ply)
-
         if (brd_side == COLORS.WHITE.id) {
             pceType = PIECES.wP.id
+
             for(pceNum <- 0 until brd_pceNum(pceType)) {
                 sq = brd_pList(PCEINDEX(pceType,pceNum))
-
-                if (!SQOFFBOARD(sq + 9) && PieceCol(brd_pieces(sq + 9)).id == COLORS.BLACK.id) {
+                if (!SQOFFBOARD(sq + 9) && PieceCol(brd_pieces(sq + 9)) == COLORS.BLACK.id) {
                     AddWhitePawnCaptureMove(sq, sq+9, brd_pieces(sq + 9))
                 }
-                if (!SQOFFBOARD(sq + 11) && PieceCol(brd_pieces(sq + 11)).id == COLORS.BLACK.id) {
+                if (!SQOFFBOARD(sq + 11) && PieceCol(brd_pieces(sq + 11)) == COLORS.BLACK.id) {
                     AddWhitePawnCaptureMove(sq, sq+11, brd_pieces(sq + 11))
                 }
 
@@ -303,18 +307,18 @@ object MoveGen {
                 }
             }
 
-            pceType = PIECES.wN.id // HACK to set for loop other pieces
+            //pceType = PIECES.wN.id // HACK to set for loop other pieces
 
         } else {
             pceType = PIECES.bP.id
             for(pceNum <- 0 until brd_pceNum(pceType)) {
                 sq = brd_pList(PCEINDEX(pceType,pceNum))
 
-                if (!SQOFFBOARD(sq - 9) && PieceCol(brd_pieces(sq - 9)).id == COLORS.WHITE.id) {
+                if (!SQOFFBOARD(sq - 9) && PieceCol(brd_pieces(sq - 9)) == COLORS.WHITE.id) {
                     AddBlackPawnCaptureMove(sq, sq-9, brd_pieces(sq - 9))
                 }
 
-                if (!SQOFFBOARD(sq - 11) && PieceCol(brd_pieces(sq - 11)).id == COLORS.WHITE.id) {
+                if (!SQOFFBOARD(sq - 11) && PieceCol(brd_pieces(sq - 11)) == COLORS.WHITE.id) {
                     AddBlackPawnCaptureMove(sq, sq-11, brd_pieces(sq - 11))
                 }
                 if (brd_enPas != SQUARES.NO_SQ.id) {
@@ -326,7 +330,7 @@ object MoveGen {
                     }
                 }
             }
-            pceType = PIECES.bN.id // HACK to set for loop other pieces
+            //pceType = PIECES.bN.id // HACK to set for loop other pieces
         }
 
         pceIndex = LoopNonSlideIndex(brd_side)
@@ -343,7 +347,7 @@ object MoveGen {
 
                     if (!SQOFFBOARD(t_sq)) {
                         if (brd_pieces(t_sq) != PIECES.EMPTY.id) {
-                            if (PieceCol(brd_pieces(t_sq)).id == (brd_side ^ 1)) {
+                            if (PieceCol(brd_pieces(t_sq)) == (brd_side^1)) {
                                 AddCaptureMove(MOVE(sq, t_sq, brd_pieces(t_sq), PIECES.EMPTY.id, 0))
                             }
                         }
@@ -368,7 +372,7 @@ object MoveGen {
                     breakable {
                     while (!SQOFFBOARD(t_sq)) {
                         if (brd_pieces(t_sq) != PIECES.EMPTY.id) {
-                            if (PieceCol(brd_pieces(t_sq)).id == (brd_side^1)) {
+                            if (PieceCol(brd_pieces(t_sq)) == (brd_side^1)) {
                                 AddCaptureMove(MOVE(sq, t_sq, brd_pieces(t_sq), PIECES.EMPTY.id, 0))
                             }
                             break
