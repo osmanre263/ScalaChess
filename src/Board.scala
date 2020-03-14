@@ -16,6 +16,7 @@ object Board {
     var brd_pceNum = new Array[Int](13)
     var brd_material = new Array[Int](2)
     var brd_pList = new Array[Int](14 * 10)
+    var brd_HashTable = new Array[Int](1)
 
     class HistoryMove {
         var move = NOMOVE
@@ -29,6 +30,35 @@ object Board {
         var move = NOMOVE
         var posKey = 0
     }
+
+    /*enum {  HFNONE, HFALPHA, HFBETA, HFEXACT};
+
+    typedef struct {
+        U64 posKey;
+        int move;
+        int score;
+        int depth;
+        int flags;
+    } S_HASHENTRY;
+
+    typedef struct {
+        S_HASHENTRY *pTable;
+        int numEntries;
+        int newWrite;
+        int overWrite;
+        int hit;
+        int cut;
+    } S_HASHTABLE;
+
+    typedef struct {
+
+        int move;
+        int castlePerm;
+        int enPas;
+        int fiftyMove;
+        U64 posKey;
+
+    } S_UNDO;*/
 
     var brd_history = Array.fill[HistoryMove](MAXGAMEMOVES)(new HistoryMove())
     var brd_PvTable = Array.fill[PvMove](PVENTRIES)(new PvMove())

@@ -5,7 +5,6 @@ import Evaluate._
 import MoveGen._
 import MakeMove._
 import IO._
-import java.util.Calendar._
 import util.control.Breaks._
 
 object Search {
@@ -55,10 +54,6 @@ object Search {
         false
     }
 
-    def ClearPvTable() {
-        brd_PvTable = Array.fill[PvMove](PVENTRIES)(new PvMove())
-    }
-
     def ClearForSearch() {
         for (index <- 0 until 14 * BRD_SQ_NUM) {
             brd_searchHistory(index) = 0
@@ -69,6 +64,10 @@ object Search {
         }
 
         ClearPvTable()
+
+        //brd_HashTable.overWrite=0;
+        //brd_HashTable.hit=0;
+        //brd_HashTable.cut=0;
 
         brd_ply = 0
 
@@ -111,9 +110,11 @@ object Search {
         var Legal = 0
         val OldAlpha = alpha
         var BestMove = NOMOVE
-        val PvMove = ProbePvTable()
         var Move = 0
         Score = -INFINITE
+
+        //pv moves
+        val PvMove = ProbePvTable()
 
         if (PvMove != NOMOVE) {
             breakable {
@@ -177,14 +178,22 @@ object Search {
             return EvalPosition()
         }
 
+        //check extension
         val InCheck = SqAttacked(brd_pList(PCEINDEX(Kings(brd_side).id, 0)), brd_side^1)
         if (InCheck) {
             depth += 1
         }
 
         var Score = -INFINITE
+        var PvMove = NOMOVE
 
-        /*if (DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
+        //if(ProbeHashEntry(PvMove,Score,alpha, beta, depth) ) {
+            //brd_HashTable.cut += 1;
+            //return Score;
+        //}
+
+        //null move pruning
+        if (DoNull && !InCheck && brd_ply != 0 && (brd_material(brd_side) > 50200) && depth >= 4) {
             val ePStore = brd_enPas
             if (brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
             brd_side ^= 1
@@ -199,10 +208,11 @@ object Search {
             if (brd_enPas != SQUARES.NO_SQ.id) HASH_EP()
 
             if (srch_stop) return 0
+
             if (Score >= beta) {
                 return beta
             }
-        }*/
+        }
 
         GenerateMoves()
 
@@ -210,10 +220,12 @@ object Search {
         var Legal = 0
         val OldAlpha = alpha
         var BestMove = NOMOVE
+        var BestScore = -INFINITE
         var Move = NOMOVE
         Score = -INFINITE
-        
-        val PvMove = ProbePvTable()
+
+        //pv moves
+        PvMove = ProbePvTable()
 
         if (PvMove != NOMOVE) {
             breakable {
@@ -237,24 +249,30 @@ object Search {
 
                 if (srch_stop) return 0
 
-                if (Score > alpha) {
-                    if (Score >= beta) {
-                        if (Legal == 1) {
-                            srch_fhf += 1
-                        }
-                        srch_fh += 1
-
-                        if ((Move & MFLAGCAP) == 0) {
-                            brd_searchKillers(MAXDEPTH + brd_ply) = brd_searchKillers(brd_ply)
-                            brd_searchKillers(brd_ply) = Move
-                        }
-                        return beta
-                    }
-                    alpha = Score
+                if (Score > BestScore) {
+                    BestScore = Score
                     BestMove = Move
+                    if (Score > alpha) {
+                        if (Score >= beta) {
+                            if (Legal == 1) {
+                                srch_fhf += 1
+                            }
+                            srch_fh += 1
 
-                    if ((BestMove & MFLAGCAP) == 0) {
-                        brd_searchHistory(brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove)) += depth * depth
+                            if ((Move & MFLAGCAP) == 0) {
+                                brd_searchKillers(MAXDEPTH + brd_ply) = brd_searchKillers(brd_ply)
+                                brd_searchKillers(brd_ply) = Move
+                            }
+                            //StoreHashEntry(BestMove, beta, HFBETA, depth)
+
+                            return beta
+                        }
+                        alpha = Score
+                        BestMove = Move
+
+                        if ((BestMove & MFLAGCAP) == 0) {
+                            brd_searchHistory(brd_pieces(FROMSQ(BestMove)) * BRD_SQ_NUM + TOSQ(BestMove)) += depth * depth
+                        }
                     }
                 }
             }
@@ -270,6 +288,9 @@ object Search {
 
         if (alpha != OldAlpha) {
             StorePvMove(BestMove)
+            //StoreHashEntry(BestMove, BestScore, HFEXACT, depth)
+        } else {
+            //StoreHashEntry(BestMove, alpha, HFALPHA, depth);
         }
 
         alpha
