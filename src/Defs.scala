@@ -131,12 +131,12 @@ object Defs {
     def MIRROR64(sq : Int): Int =  Mirror64(sq)
 
     def RAND_32(): Int = {
-       return (((Math.random() * 255) + 1).floor.toInt << 23) |(((Math.random() * 255) + 1).floor.toInt << 16) |(((Math.random() * 255) + 1).floor.toInt << 8) |((Math.random() * 255) + 1).floor.toInt + 1
+       (((Math.random()*255)+1).floor.toInt << 23) |(((Math.random()*255)+1).floor.toInt << 16) |(((Math.random()*255)+1).floor.toInt << 8) |((Math.random()*255) + 1).floor.toInt + 1
     }
 
     def SQOFFBOARD(sq : Int): Boolean = {
         if (FilesBrd(sq) == SQUARES.OFFBOARD.id) return true
-        return false
+        false
     }
 
     def HASH_PCE(pce : Int,sq : Int): Unit = brd_posKey ^= PieceKeys(pce * 120 + sq)
@@ -144,11 +144,11 @@ object Defs {
     def HASH_SIDE(): Unit = brd_posKey ^= SideKey
     def HASH_EP(): Unit = brd_posKey ^= PieceKeys(brd_enPas)
 
-    //var GameController = {}
-    //GameController.EngineSide = COLORS.BOTH
-    //GameController.PlayerSide = COLORS.BOTH
-    //GameController.BoardFlipped = false
-    //GameController.GameOver = false
-    //GameController.BookLoaded = false
-    //GameController.GameSaved = true
+    /*var GameController = {}
+    GameController.EngineSide = COLORS.BOTH
+    GameController.PlayerSide = COLORS.BOTH
+    GameController.BoardFlipped = false
+    GameController.GameOver = false
+    GameController.BookLoaded = false
+    GameController.GameSaved = true*/
 }

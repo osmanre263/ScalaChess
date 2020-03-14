@@ -20,7 +20,7 @@ object MoveGen {
     }
 
     def MOVE(from : Int,to : Int,captured : Int,promoted : Int,flag : Int): Int = {
-        return from | (to << 7) | (captured << 14) | (promoted << 20) | flag
+        from | (to << 7) | (captured << 14) | (promoted << 20) | flag
     }
 
     def MoveExists(move : Int) : Boolean = {
@@ -36,7 +36,7 @@ object MoveGen {
                 }
             }
         }
-        return false
+        false
     }
 
     def AddCaptureMove(move : Int) {
@@ -167,7 +167,7 @@ object MoveGen {
                 }
             }
 
-            //pceType = PIECES.wN.id // HACK to set for loop other pieces
+            //pceType = PIECES.wN.id  HACK to set for loop other pieces
         } else {
             pceType = PIECES.bP.id
 
@@ -215,7 +215,7 @@ object MoveGen {
                 }
             }
 
-            //pceType = PIECES.bN.id // HACK to set for loop other pieces
+            //pceType = PIECES.bN.id  HACK to set for loop other pieces
         }
 
         pceIndex = LoopSlideIndex(brd_side)
@@ -307,7 +307,7 @@ object MoveGen {
                 }
             }
 
-            //pceType = PIECES.wN.id // HACK to set for loop other pieces
+            //pceType = PIECES.wN.id HACK to set for loop other pieces
 
         } else {
             pceType = PIECES.bP.id
@@ -330,7 +330,7 @@ object MoveGen {
                     }
                 }
             }
-            //pceType = PIECES.bN.id // HACK to set for loop other pieces
+            //pceType = PIECES.bN.id  HACK to set for loop other pieces
         }
 
         pceIndex = LoopNonSlideIndex(brd_side)

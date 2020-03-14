@@ -52,7 +52,7 @@ object Search {
                 return true
             }
         }
-        return false
+        false
     }
 
     def ClearPvTable() {
@@ -153,7 +153,7 @@ object Search {
             StorePvMove(BestMove)
         }
 
-        return alpha
+        alpha
     }
 
     def AlphaBeta(_alpha : Int, _beta : Int, _depth : Int, DoNull : Boolean): Int = {
@@ -272,7 +272,7 @@ object Search {
             StorePvMove(BestMove)
         }
 
-        return alpha
+        alpha
     }
 
     /*var domUpdate_depth
@@ -287,7 +287,7 @@ object Search {
         scoreText = "Score: " + "Mate In " + (MATE - Math.abs(domUpdate_score)) + " moves"
     }
 
-    //println("UpdateDOMStats depth:" + domUpdate_depth + " score:" + domUpdate_score + " nodes:" + domUpdate_nodes)
+    println("UpdateDOMStats depth:" + domUpdate_depth + " score:" + domUpdate_score + " nodes:" + domUpdate_nodes)
     $("#OrderingOut").text("Ordering: " + domUpdate_ordering + "%")
     $("#DepthOut").text("Depth: " + domUpdate_depth)
     $("#ScoreOut").text(scoreText)
@@ -319,7 +319,6 @@ object Search {
                 line += " " + PrMove(brd_PvArray(pvNum))
             }
             if (currentDepth != 1) {
-                //println(srch_fhf.toDouble + " " + srch_fh.toDouble)
                 line += " Ordering: " + ((srch_fhf.toDouble/srch_fh.toDouble)*100).formatted("%.2f") + "%"
             }
             println(line)

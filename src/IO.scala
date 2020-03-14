@@ -19,7 +19,7 @@ object IO {
         val file = FilesBrd(sq)
         val rank = RanksBrd(sq)
 
-        return FileChar(file).toString + RankChar(rank).toString
+        FileChar(file).toString + RankChar(rank).toString
     }
 
     def PrMove(move : Int): String = {
@@ -31,7 +31,7 @@ object IO {
         val ft = FilesBrd(TOSQ(move))
         val rt = RanksBrd(TOSQ(move))
 
-        MvStr = FileChar(ff).toString + RankChar(rf).toString + FileChar(ft).toString + RankChar(rt).toString// + ('1'.toInt + rf).toString + ('a'.toInt + ft).toString + ('1'.toInt + rt).toString
+        MvStr = FileChar(ff).toString + RankChar(rf).toString + FileChar(ft).toString + RankChar(rt).toString
 
         val promoted = PROMOTED(move)
 
@@ -46,7 +46,7 @@ object IO {
             }
             MvStr += pchar
         }
-        return MvStr
+        MvStr
     }
 
     def ParseMove(from : Int, to : Int): Int = {
@@ -80,6 +80,6 @@ object IO {
             return Move
         }
 
-        return NOMOVE
+        NOMOVE
     }
 }
