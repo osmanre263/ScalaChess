@@ -1,3 +1,5 @@
+package com.scala.chess
+
 import Board._
 
 object Defs {

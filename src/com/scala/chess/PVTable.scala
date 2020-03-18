@@ -1,8 +1,11 @@
+package com.scala.chess
+
 import Board._
 import Defs._
-import MoveGen._
 import MakeMove._
-import util.control.Breaks._
+import MoveGen._
+
+import scala.util.control.Breaks.{break, breakable}
 
 object PVTable {
     def GetPvLine(depth : Int) : Int = {

@@ -1,7 +1,10 @@
+package com.scala.chess
+
 import Board._
 import Defs._
 import MakeMove._
-import util.control.Breaks._
+
+import scala.util.control.Breaks.{break, breakable}
 
 object MoveGen {
     var VictimScore = Array( 0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600 )
@@ -111,7 +114,7 @@ object MoveGen {
 
     def GenerateMoves() {
         brd_moveListStart(brd_ply + 1) = brd_moveListStart(brd_ply)
-        
+
         var pceType = 0
         var pceIndex = 0
         var pce = 0

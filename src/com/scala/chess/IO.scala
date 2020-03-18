@@ -1,8 +1,10 @@
+package com.scala.chess
+
 import Board._
-import Defs._ 
-import MoveGen._
+import Defs._
 import MakeMove._
-import util.control.Breaks._
+import MoveGen._
+import scala.util.control.Breaks._
 
 object IO {
     def PrintMoveList() {
@@ -58,10 +60,10 @@ object IO {
         breakable {
         for(index <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1)) {
             Move = brd_moveList(index)
-            if(FROMSQ(Move)==from && TOSQ(Move)==to) {
+            if(FROMSQ(Move) == from && TOSQ(Move) == to) {
                 PromPce = PROMOTED(Move)
                 if(PromPce!=PIECES.EMPTY.id) {
-                    if( (PromPce==PIECES.wQ.id && brd_side==COLORS.WHITE.id) || (PromPce==PIECES.bQ.id && brd_side==COLORS.BLACK.id) ) {
+                    if( (PromPce == PIECES.wQ.id && brd_side == COLORS.WHITE.id) || (PromPce == PIECES.bQ.id && brd_side == COLORS.BLACK.id) ) {
                         found = true
                         break
                     }

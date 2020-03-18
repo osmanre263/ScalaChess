@@ -1,7 +1,8 @@
-import MoveGen._
-import Board._ 
+package com.scala.chess
+
+import Board._
 import MakeMove._
-import IO._
+import MoveGen._
 
 object Perft {
     var perft_leafNodes = 0

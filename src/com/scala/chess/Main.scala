@@ -1,11 +1,10 @@
-import Defs._
-import Search._
+package com.scala.chess
+
 import Board._
-import MoveGen._
-import MakeMove._
+import Defs._
 import Evaluate._
-import Perft._
-import IO._
+import MoveGen._
+import Search._
 
 object Main {
     def InitBoardVars() {
@@ -84,14 +83,14 @@ object Main {
 
     def main(args: Array[String]): Unit = {
         init()
-        var one = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        //var one = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
         ParseFen(START_FEN)
         //PrintBoard()
-        GenerateMoves()
+        //GenerateMoves()
         //PrintPceLists()
         //PrintMoveList()
-        CheckBoard()
+        //CheckBoard()
         SearchPosition(10)
     }
 }

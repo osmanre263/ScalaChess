@@ -1,6 +1,9 @@
+package com.scala.chess
+
 import Board._
 import Defs._
-import util.control.Breaks._
+
+import scala.util.control.Breaks._
 
 object MakeMove {
     def ClearPiece(sq : Int) {

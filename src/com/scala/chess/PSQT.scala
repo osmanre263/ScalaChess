@@ -1,3 +1,5 @@
+package com.scala.chess
+
 object PSQT {
     var PawnTable = Array(
     0	,	0	,	0	,	0	,	0	,	0	,	0	,	0	,

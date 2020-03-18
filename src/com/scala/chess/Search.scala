@@ -1,11 +1,14 @@
-import Defs._
+package com.scala.chess
+
 import Board._
-import PVTable._
+import Defs._
 import Evaluate._
-import MoveGen._
-import MakeMove._
 import IO._
-import util.control.Breaks._
+import MakeMove._
+import MoveGen._
+import PVTable._
+
+import scala.util.control.Breaks.{break, breakable}
 
 object Search {
     var srch_nodes = 0
@@ -21,14 +24,14 @@ object Search {
 
     def CheckUp() {
         val time = System.currentTimeMillis
-        if ((time - srch_start) > srch_time ) srch_stop = true
+        if ((time - srch_start) > srch_time) srch_stop = true
     }
 
     def PickNextMove(moveNum : Int) {
         var bestScore = 0
         var bestNum = moveNum
         var temp = 0
-        
+
         for (index <- moveNum until brd_moveListStart(brd_ply + 1)) {
             if (brd_moveScores(index) > bestScore) {
                 bestScore = brd_moveScores(index)
@@ -81,7 +84,7 @@ object Search {
     def Quiescence(_alpha : Int, _beta : Int): Int = {
         var alpha = _alpha
         val beta = _beta
-        
+
         if ((srch_nodes & 2047) == 0) CheckUp()
 
         srch_nodes += 1
@@ -126,7 +129,7 @@ object Search {
             }}
         }
 
-        for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1) )  {
+        for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1))  {
             PickNextMove(MoveNum)
             Move = brd_moveList(MoveNum)
 
@@ -141,7 +144,7 @@ object Search {
                             srch_fhf += 1
                         }
                         srch_fh += 1
-    
+
                         return beta
                     }
                     alpha = Score
@@ -165,7 +168,7 @@ object Search {
         if (depth <= 0) {
             return Quiescence(alpha, beta)
         }
-        
+
         if ((srch_nodes & 2047) == 0) CheckUp()
 
         srch_nodes += 1
@@ -187,7 +190,7 @@ object Search {
         var Score = -INFINITE
         var PvMove = NOMOVE
 
-        //if(ProbeHashEntry(PvMove,Score,alpha, beta, depth) ) {
+        //if (ProbeHashEntry(PvMove,Score,alpha, beta, depth)) {
             //brd_HashTable.cut += 1;
             //return Score;
         //}
@@ -236,6 +239,22 @@ object Search {
                 }
             }}
         }
+
+        /*var FUTILITY_MARGIN = Array(0, 80, 170, 270, 380, 500, 630)
+        var ENABLE_FUTILITY_PRUNING = false
+        if (ENABLE_FUTILITY_PRUNING && depth < FUTILITY_MARGIN.length) {
+            //if (!MoveUtil.isPawnPush78(move)) {
+            if (eval == Util.SHORT_MIN) {
+                eval = EvalUtil.getScore(cb);
+            }
+            if (eval + FUTILITY_MARGIN[depth] <= alpha) {
+                if (Statistics.ENABLED) {
+                    Statistics.futile[depth]++;
+                }
+                continue;
+            }
+            //}
+        }*/
 
         for (MoveNum <- brd_moveListStart(brd_ply) until brd_moveListStart(brd_ply + 1))  {
             PickNextMove(MoveNum)
@@ -325,27 +344,32 @@ object Search {
         var line = ""
 
         ClearForSearch()
-        srch_time = 3*1000
+        srch_time = 5 //1*1000
         breakable {
-        for (currentDepth <- 1 to depth ) {
-            bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true)
-            if (srch_stop) break
-            bestMove = ProbePvTable()
+            for (currentDepth <- 1 to depth) {
+                bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, true)
+                if (srch_stop) break
+                bestMove = ProbePvTable()
 
-            line = "D: " + currentDepth + " Best: " + PrMove(bestMove) + " Score: " + bestScore + " nodes: " + srch_nodes
+                line = "D: " + currentDepth + " Best: " + PrMove(bestMove) + " Score: " + bestScore + " nodes: " + srch_nodes
 
-            pvMoves = GetPvLine(currentDepth)
-            line += " Pv:"
-            for (pvNum <- 0 until pvMoves) {
-                line += " " + PrMove(brd_PvArray(pvNum))
+                pvMoves = GetPvLine(currentDepth)
+                line += " Pv:"
+                for (pvNum <- 0 until pvMoves) {
+                    line += " " + PrMove(brd_PvArray(pvNum))
+                }
+                if (currentDepth != 1) {
+                    line += " Ordering: " + ((srch_fhf.toDouble / srch_fh.toDouble) * 100).formatted("%.2f") + "%"
+                }
+                println(line)
             }
-            if (currentDepth != 1) {
-                line += " Ordering: " + ((srch_fhf.toDouble/srch_fh.toDouble)*100).formatted("%.2f") + "%"
-            }
-            println(line)
-        }}
-        println("Search stopped... Best Move: " + PrMove(bestMove))
-        srch_best = bestMove
-        srch_thinking = false
+        }
+        if (bestMove != NOMOVE) {
+            println("Search stopped... Best Move: " + PrMove(bestMove))
+            srch_best = bestMove
+            srch_thinking = false
+        } else {
+            println("Search stopped... No Move found")
+        }
     }
 }

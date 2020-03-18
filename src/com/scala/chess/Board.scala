@@ -1,7 +1,9 @@
+package com.scala.chess
+
 import Defs._
 import IO._
 import Search._
-import util.control.Breaks._
+import scala.util.control.Breaks._
 
 object Board {
     //board variables
