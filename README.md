@@ -1,1 +1,1 @@
-UCI Chess engine written in Scala
+UCI Chess engine written in Scala WIP
